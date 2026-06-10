@@ -1,0 +1,8 @@
+galaxy_info:
+  role_name: kyverno_policies
+  author: Mojib Wali
+  description: Deploy and manage kyverno and Kyverno build in policies via Helm
+  license: MIT
+  min_ansible_version: "2.16"
+
+dependencies: []
