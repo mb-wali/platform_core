@@ -59,10 +59,9 @@
       | length
     )
 
-## Kyverno policies
 - name: Install or upgrade Kyverno policies
   kubernetes.core.helm:
-    name: Kyverno-policies
+    name: kyverno-policies
     chart_ref: kyverno/kyverno-policies
     chart_version: "{{ kyverno_policies_helm_version }}"
     release_namespace: kyverno
