@@ -1,0 +1,52 @@
+namespace: mb_wali
+name: platform_core
+version: 0.1.0
+
+readme: README.md
+
+authors:
+  - Mojib Wali
+
+description: >
+  Ansible collection for deploying and managing core Kubernetes platform services using Helm.
+  Includes lifecycle management for networking, security, policy enforcement, and GitOps components.
+
+license:
+  - MIT
+
+tags:
+  - kubernetes
+  - helm
+  - gitops
+  - cilium
+  - argocd
+  - rancher
+  - contour
+  - ceph
+  - grafana
+  - prometheus
+  - loki
+  - alloy
+  - vault
+  - kyverno
+  - platform
+  - infrastructure
+  - cloud_native
+
+dependencies:
+  kubernetes.core: ">=2.4.0"
+
+repository: https://github.com/mb-wali/platform_core
+
+documentation: https://github.com/mb-wali/platform_core/blob/main/README.md
+
+homepage: https://github.com/mb-wali/platform_core
+
+issues: https://github.com/mb-wali/platform_core/issues
+
+build_ignore:
+  - .git
+  - .github
+  - "*.tar.gz"
+  - "*.retry"
+  - ".pytest_cache"
