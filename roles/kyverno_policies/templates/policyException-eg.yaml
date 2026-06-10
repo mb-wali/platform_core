@@ -1,0 +1,33 @@
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: elabftw-exception
+  namespace: elabftw
+spec:
+  exceptions:
+
+    # allow run-as-non-root enforcement (all variants)
+    - policyName: require-run-as-non-root-user
+      ruleNames:
+        - run-as-non-root-user
+        - autogen-run-as-non-root-user
+
+    - policyName: require-run-as-nonroot
+      ruleNames:
+        - run-as-non-root
+        - autogen-run-as-non-root
+
+    # allow capabilities restriction policy
+    - policyName: disallow-capabilities-strict
+      ruleNames:
+        - adding-capabilities-strict
+        - autogen-adding-capabilities-strict
+
+  match:
+    any:
+      - resources:
+          kinds:
+            - Pod
+            - Deployment
+          namespaces:
+            - elabftw

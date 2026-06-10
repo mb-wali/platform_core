@@ -1,0 +1,17 @@
+kyverno_helm_version: 3.5.2
+kyverno_policies_helm_version: 3.5.2
+kyverno_validationFailureAction: Audit
+kyverno_podSecurityStandard: baseline
+kyverno_autoscaling: false
+
+# policyexception
+kyverno_policyExceptions: false
+kyverno_policyExceptions_ns: '*'
+
+
+## TODO:-
+## reporter
+kyverno_reporter: false
+kyverno_reporter_ingress_enabled: false
+kyverno_reporter_ingress_class: nginx
+kyverno_reporter_ingress_host: kyverno-report.domain.com

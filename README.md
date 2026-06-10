@@ -99,3 +99,11 @@ Once installed, you reference roles using the fully qualified collection name (F
 ```bash
 ansible-galaxy collection build
 ```
+
+# auth
+
+```bash
+export K8S_AUTH_HOST=https://my-cluster:6443
+export K8S_AUTH_API_KEY=<token>
+export K8S_AUTH_VERIFY_SSL=false
+```

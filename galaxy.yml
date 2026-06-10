@@ -34,7 +34,7 @@ tags:
   - cloud_native
 
 dependencies:
-  kubernetes.core: ">=2.4.0"
+  kubernetes.core: ">=6.0.0"
 
 repository: https://github.com/mb-wali/platform_core
 
