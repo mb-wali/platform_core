@@ -1,0 +1,8 @@
+galaxy_info:
+  role_name: contour
+  author: Mojib Wali
+  description: Deploy and manage Contour via Helm
+  license: MIT
+  min_ansible_version: "2.16"
+
+dependencies: []
