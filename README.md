@@ -1,40 +1,39 @@
+# 🧩 Ansible Collection — `mb_wali.platform_core`
 
-# Ansible Collection - mb_wali.platform_core
+A production-ready Ansible collection for deploying and managing core Kubernetes platform services using **Helm**.
 
-Ansible collection for deploying and managing core Kubernetes platform services using Helm.
-
-This collection provides lifecycle management for essential platform components such as networking, security, GitOps, and policy enforcement in Kubernetes clusters.
-
----
-
-## 🚀 What this collection does
-
-`platform_core` standardizes the deployment and management of:
-
-- Cilium (CNI / networking)
-- Argo CD (GitOps)
-- Kyverno (policy engine)
-- Rancher (cluster management)
-- Ingress controllers / Gateway API
-- Observability components (optional extension)
-
-All components are deployed and managed using **Helm via Ansible**.
+It provides a standardized, repeatable way to install and operate essential platform components across Kubernetes clusters.
 
 ---
 
-## 🧱 Key Features
+## 🚀 Overview
 
-- Helm-based deployment of Kubernetes platform services
-- Idempotent install and upgrade workflows
-- Modular role-based architecture
-- Version-pinned deployments for stability
-- Designed for platform engineering teams and SREs
+`platform_core` is designed to simplify and standardize the lifecycle management of foundational Kubernetes services, including:
+
+- 🌐 Cilium (CNI / networking)
+- 🔁 Argo CD (GitOps)
+- 🛡️ Kyverno (policy enforcement)
+- ☸️ Rancher (cluster management)
+- 🚪 Ingress Controllers / Gateway API
+- 📊 Observability stack *(optional extension)*
+
+All components are deployed using **Helm via Ansible**, ensuring consistency, idempotency, and version control.
 
 ---
 
-## 📦 Collection Structure
+## ✨ Key Features
 
-```
+- 📦 Helm-based deployment of Kubernetes platform services  
+- 🔁 Fully idempotent install and upgrade workflows  
+- 🧱 Modular, role-based architecture  
+- 📌 Version-pinned deployments for stability and reproducibility  
+- 🧑‍🔧 Built for platform engineering teams and SREs  
+- 🔧 Easily extensible for additional platform components  
+
+---
+
+## 🗂️ Collection Structure
+```bash
 platform_core/
 ├── galaxy.yml
 ├── roles/
@@ -51,34 +50,36 @@ platform_core/
 
 ## ⚙️ Requirements
 
-- Ansible >= 2.15
-- kubernetes.core collection
-- Access to a Kubernetes cluster
-- Helm installed on execution environment
+Before using this collection, ensure the following prerequisites are met:
 
-Install dependencies:
+- Ansible ≥ 2.15  
+- `kubernetes.core` collection  
+- Access to a Kubernetes cluster (API key required from the cluster; no kubeconfig or direct control-node access needed)
+- Helm installed in the execution environment  
+
+### Install dependencies
 
 ```bash
 ansible-galaxy collection install kubernetes.core
+```
+
+### 📦 Installation
+
+**Install the collection**
+```bash
+ansible-galaxy collection install mb_wali.platform_core
 ```
 
 ---
 
 ## ▶️ Usage
 
-**Install the collection**
+### Example Playbook
 
-```bash
-ansible-galaxy collection install mb_wali.platform_core
-```
-
-
-**Use in a playbook**
-
-Once installed, you reference roles using the fully qualified collection name (FQCN):
+Once installed, roles can be referenced using the fully qualified collection name (FQCN):
 
 ```yaml
-- name: Deploy platform core services
+- name: Deploy Kubernetes platform core services
   hosts: localhost
   gather_facts: false
 
@@ -94,16 +95,20 @@ Once installed, you reference roles using the fully qualified collection name (F
 
 ---
 
-**Build Collection**
+## 🔐 Kubernetes Authentication
 
-```bash
-ansible-galaxy collection build
-```
-
-# auth
-
+Set the required environment variables for cluster access:
 ```bash
 export K8S_AUTH_HOST=https://my-cluster:6443
 export K8S_AUTH_API_KEY=<token>
 export K8S_AUTH_VERIFY_SSL=false
+```
+
+---
+
+## 🏗️ Build the Collection
+
+To package the collection locally:
+```bash
+ansible-galaxy collection build
 ```

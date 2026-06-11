@@ -1,0 +1,14 @@
+# https://github.com/projectcontour/helm-charts/blob/main/charts/contour/values.yaml
+
+envoy:
+  service:
+    nodePorts:
+      http: "{{ contour_node_port_http }}"
+      https: "{{ contour_node_port_https }}"
+    type: NodePort
+
+
+ingressClass:
+  enabled: true
+  name: "{{ clusterIngressClassName }}"
+  isDefaultClass: true

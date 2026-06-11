@@ -1,0 +1,45 @@
+---
+- name: Ensure Contour values directory exists
+  ansible.builtin.file:
+    path: /tmp/contour
+    state: directory
+    mode: "0755"
+
+- name: Render Contour values file
+  ansible.builtin.template:
+    src: values.yaml.j2
+    dest: /tmp/contour/values.yaml
+    mode: "0644"
+
+- name: Add Contour Helm repo
+  kubernetes.core.helm_repository:
+    name: contour
+    repo_url: https://projectcontour.github.io/helm-charts/
+
+- name: Install or upgrade Contour
+  kubernetes.core.helm:
+    name: contour
+    chart_ref: contour/contour
+    chart_version: "{{ contour_helm_version }}"
+    release_namespace: contour
+    create_namespace: true
+    values_files:
+      - /tmp/contour/values.yaml
+    state: present
+
+- name: Wait for contour envoy daemonset to be ready
+  kubernetes.core.k8s_info:
+    api_version: apps/v1
+    kind: DaemonSet
+    namespace: contour
+    name: contour-envoy
+  register: contour_envoy_ds
+  retries: 30
+  delay: 10
+  until: >
+    contour_envoy_ds.resources | length > 0 and
+    (
+      contour_envoy_ds.resources[0].status.numberReady | default(0)
+    ) == (
+      contour_envoy_ds.resources[0].status.desiredNumberScheduled | default(0)
+    )
