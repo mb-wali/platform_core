@@ -12,3 +12,19 @@ ingressClass:
   enabled: true
   name: "{{ clusterIngressClassName }}"
   isDefaultClass: true
+
+
+configInline:
+
+  # The following shows the default proxy timeout settings.
+  # timeouts:
+  #   request-timeout: infinity
+  #   connection-idle-timeout: 60s
+  #   stream-idle-timeout: 5m
+  #   max-connection-duration: infinity
+  #   connection-shutdown-grace-period: 5s
+  timeouts:
+    request-timeout: infinity
+    stream-idle-timeout: 1h
+    connection-idle-timeout: 1h
+    max-connection-duration: infinity

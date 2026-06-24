@@ -128,3 +128,8 @@ Once installed, roles can be referenced using the fully qualified collection nam
 ```
 
 ---
+
+## Build collection
+```bash
+ansible-galaxy collection build
+```
