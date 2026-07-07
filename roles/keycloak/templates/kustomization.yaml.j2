@@ -1,0 +1,42 @@
+secretGenerator:
+  - name: dbcreds
+    literals:
+      - username={{ key_db_username }}
+      - password={{ key_db_password }}
+      - dbname={{ key_db_name }}
+
+  - name: kcadmin
+    literals:
+      - username={{ key_admin_user }}
+      - password={{ key_admin_password }}
+
+configMapGenerator:
+  - name: keycloak-config
+    literals:
+      - KEYCLOAK_HOSTNAME_URL={{ keycloak_hostname }}
+      - KEYCLOAK_HOSTNAME_STRICT_HTTPS=false
+      - KEYCLOAK_HOSTNAME_STRICT=false
+      - KEYCLOAK_LOGLEVEL={{ keycloak_log_level }}
+      - DB_VENDOR=postgres
+      - DB_ADDR={{ key_db_host }}
+      - DB_PORT={{ key_db_port }}
+      - PROXY_ADDRESS_FORWARDING={{ keycloak_proxy_address_forwarding | lower }}
+      - JDBC_PARAMS={{ keycloak_jdbc_params }}
+      - JAVA_OPTS=-server
+        -Xms4096m
+        -Xmx8192m
+        -XX:MetaspaceSize=96m
+        -XX:MaxMetaspaceSize=256m
+        -Djboss.modules.system.pkgs=org.jboss.byteman
+        -Djava.awt.headless=true
+        -Dkeycloak.profile.feature.token_exchange=enabled
+        -Djava.security.egd=file:/dev/urandom
+      - KC_SPI_EVENTS_LISTENER_LOGIN_LISTENER_API_SERVICE_HOST={{ keycloak_login_listener_api_service_host }}
+      - KC_SPI_EVENTS_LISTENER_LOGIN_LISTENER_CLIENT_IDS={{ keycloak_login_listener_client_ids }}
+
+resources:
+- deployment.yaml
+- service.yaml
+- ingress.yaml
+generatorOptions:
+  disableNameSuffixHash: true

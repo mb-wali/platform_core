@@ -1,0 +1,166 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak
+  labels:
+    app: keycloak
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak
+  template:
+    metadata:
+      labels:
+        app: keycloak
+    spec:
+      # ---- POD-LEVEL SECURITY ----
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      # volumes:
+      # # PLUGIN
+      # - name: kc-event-listener
+      #   emptyDir: {}
+
+      initContainers:
+
+      # plugin
+      # ## this will fail if it cannot find/reach KC_SPI_EVENTS_LISTENER_LOGIN_LISTENER_API_SERVICE_HOST
+      # - name: init-plugin-event-listener
+      #   image: ghcr.io/cyverse-austria/de-register-event-listener:v0.1.1
+      #   imagePullPolicy: Always
+      #   command:
+      #   - "sh"
+      #   - "-c"
+      #   - "cp event-listener.jar /kc-event-listener/"
+      #   volumeMounts:
+      #   - name: kc-event-listener
+      #     mountPath: "/kc-event-listener"
+      #   # ---- INIT-CONTAINER-LEVEL SECURITY ----
+      #   securityContext:
+      #     runAsNonRoot: true
+      #     runAsUser: 1000
+      #     runAsGroup: 1000
+      #     allowPrivilegeEscalation: false
+      #     capabilities:
+      #       drop:
+      #         - ALL
+      #     seccompProfile:
+      #       type: RuntimeDefault
+
+      containers:
+      - name: keycloak
+        image: {{ keycloak_image }}:{{ keycloak_image_tag }}
+        # ---- CONTAINER-LEVEL SECURITY ----
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        args:
+        - "start"
+        - "--http-relative-path=/auth/"
+        - "--proxy-headers=xforwarded"
+        - "--health-enabled=true"
+        - "--http-enabled=true"
+        - "--spi-login-protocol-openid-connect-legacy-logout-redirect-uri=true"
+        env:
+        - name: KC_BOOTSTRAP_ADMIN_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: kcadmin
+              key: username
+        - name: KC_BOOTSTRAP_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: kcadmin
+              key: password
+        - name: KC_HOSTNAME
+          valueFrom:
+            configMapKeyRef:
+              name: keycloak-config
+              key: KEYCLOAK_HOSTNAME_URL
+        - name: KC_LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: keycloak-config
+              key: KEYCLOAK_LOGLEVEL
+        - name: KC_DB
+          valueFrom:
+            configMapKeyRef:
+              name: keycloak-config
+              key: DB_VENDOR
+        - name: KC_HOSTNAME_STRICT
+          valueFrom:
+            configMapKeyRef:
+              name: keycloak-config
+              key: KEYCLOAK_HOSTNAME_STRICT
+        - name: KC_DB_URL_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: keycloak-config
+              key: DB_ADDR
+        - name: KC_DB_URL_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: keycloak-config
+              key: DB_PORT
+        - name: KC_DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: dbcreds
+              key: username
+        - name: KC_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: dbcreds
+              key: password
+        - name: KC_DB_URL_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: dbcreds
+              key: dbname
+        - name: PROXY_ADDRESS_FORWARDING
+          valueFrom:
+            configMapKeyRef:
+              name: keycloak-config
+              key: PROXY_ADDRESS_FORWARDING
+        - name: JAVA_OPTS
+          valueFrom:
+            configMapKeyRef:
+              name: keycloak-config
+              key: JAVA_OPTS
+
+        # new api
+        - name: KC_SPI_EVENTS_LISTENER_LOGIN_LISTENER_API_SERVICE_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: keycloak-config
+              key: KC_SPI_EVENTS_LISTENER_LOGIN_LISTENER_API_SERVICE_HOST
+        - name: KC_SPI_EVENTS_LISTENER_LOGIN_LISTENER_CLIENT_IDS
+          valueFrom:
+            configMapKeyRef:
+              name: keycloak-config
+              key: KC_SPI_EVENTS_LISTENER_LOGIN_LISTENER_CLIENT_IDS
+              
+        ports:
+        - name: http
+          containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /auth/realms/master
+            port: 8080
+
+        # volumeMounts:
+        # # plugin
+        # - name: kc-event-listener
+        #   mountPath: "/opt/keycloak/providers/"

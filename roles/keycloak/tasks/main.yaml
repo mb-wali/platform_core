@@ -1,0 +1,36 @@
+- name: Ensure Keycloak manifest directory exists
+  ansible.builtin.file:
+    path: /tmp/keycloak
+    state: directory
+    mode: "0755"
+
+- name: Copy static Keycloak manifests
+  ansible.builtin.copy:
+    src: .
+    dest: /tmp/keycloak/
+    mode: "0644"
+
+- name: Render templated Keycloak manifests
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "/tmp/keycloak/{{ item }}"
+    mode: "0644"
+  loop:
+    - kustomization.yaml
+    - ingress.yaml
+    - deployment.yaml
+
+- name: Ensure Keycloak namespace exists
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ key_ns }}"
+
+- name: Apply Keycloak Kustomize manifests
+  kubernetes.core.k8s:
+    state: present
+    namespace: "{{ key_ns }}"
+    definition: "{{ lookup('kubernetes.core.kustomize', dir='/tmp/keycloak') }}"
