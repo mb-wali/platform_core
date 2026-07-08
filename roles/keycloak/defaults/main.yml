@@ -1,13 +1,15 @@
-key_db_username: myuser
-key_db_password: mypassword
-key_admin_user: admin
-key_admin_password: adminpass
-key_db_name: keycloak
-key_ns: keycloak
+keycloak_db_username: myuser
+keycloak_db_password: mypassword
+keycloak_db_host: db.example.com
+keycloak_db_port: 5432
+keycloak_db_name: keycloak
+
+keycloak_admin_user: admin
+keycloak_admin_password: adminpass
+
+keycloak_ns: keycloak
 keycloak_hostname: https://keycloak.example.com
 keycloak_domain: keycloak.example.com
-key_db_host: db.example.com
-key_db_port: 5432
 
 keycloak_image: quay.io/keycloak/keycloak
 keycloak_image_tag: 26.0

@@ -1,14 +1,14 @@
 secretGenerator:
   - name: dbcreds
     literals:
-      - username={{ key_db_username }}
-      - password={{ key_db_password }}
-      - dbname={{ key_db_name }}
+      - username={{ keycloak_db_username }}
+      - password={{ keycloak_db_password }}
+      - dbname={{ keycloak_db_name }}
 
   - name: kcadmin
     literals:
-      - username={{ key_admin_user }}
-      - password={{ key_admin_password }}
+      - username={{ keycloak_admin_user }}
+      - password={{ keycloak_admin_password }}
 
 configMapGenerator:
   - name: keycloak-config
@@ -18,8 +18,8 @@ configMapGenerator:
       - KEYCLOAK_HOSTNAME_STRICT=false
       - KEYCLOAK_LOGLEVEL={{ keycloak_log_level }}
       - DB_VENDOR=postgres
-      - DB_ADDR={{ key_db_host }}
-      - DB_PORT={{ key_db_port }}
+      - DB_ADDR={{ keycloak_db_host }}
+      - DB_PORT={{ keycloak_db_port }}
       - PROXY_ADDRESS_FORWARDING={{ keycloak_proxy_address_forwarding | lower }}
       - JDBC_PARAMS={{ keycloak_jdbc_params }}
       - JAVA_OPTS=-server
