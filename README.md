@@ -4,6 +4,12 @@ A production-ready Ansible collection for deploying and managing core Kubernetes
 
 It provides a standardized, repeatable way to install and operate essential platform components across Kubernetes clusters.
 
+<p align="center">
+  <a href="./docs/assets/platform_core.png">
+    <img src="./docs/assets/platform_core.png" alt="Project Banner" width="700">
+  </a>
+</p>
+
 ---
 
 ## 🚀 Overview
