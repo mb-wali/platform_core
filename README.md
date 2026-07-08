@@ -4,6 +4,12 @@ A production-ready Ansible collection for deploying and managing core Kubernetes
 
 It provides a standardized, repeatable way to install and operate essential platform components across Kubernetes clusters.
 
+<p align="center">
+  <a href="./docs/assets/platform_core.png">
+    <img src="./docs/assets/platform_core.png" alt="Project Banner" width="700">
+  </a>
+</p>
+
 ---
 
 ## 🚀 Overview
@@ -65,9 +71,13 @@ Before using this collection, ensure the following prerequisites are met:
 - ⛵ **Helm installed** in the Ansible execution environment
 - 🔐 **Network access to the Kubernetes API endpoint**
 
-`platform_core` connects directly to the Kubernetes API using token-based authentication.
+---
 
-Configure the cluster connection using the following environment variables:
+## Kubernetes API Authentication
+
+`platform_core` connects directly to the Kubernetes API using the authentication mechanism provided by the Ansible `kubernetes.core` collection and the Python Kubernetes client.
+
+Instead of using a kubeconfig file, the cluster connection can be configured through environment variables:
 
 ```bash
 export K8S_AUTH_HOST=https://my-cluster:6443
@@ -75,11 +85,90 @@ export K8S_AUTH_API_KEY=<token>
 export K8S_AUTH_VERIFY_SSL=false
 ```
 
-Where:
+### How it works
 
-* K8S_AUTH_HOST — Kubernetes API server endpoint
-* K8S_AUTH_API_KEY — Kubernetes service account or API token with required permissions
-* K8S_AUTH_VERIFY_SSL — TLS certificate verification setting (true recommended for production)
+The `kubernetes.core` Ansible modules (`k8s`, `k8s_info`, `helm`, `helm_repository`, etc.) use the Kubernetes Python client internally.
+
+When a Kubernetes-related task runs, the client builds the Kubernetes API connection configuration by checking available authentication sources. The main sources are:
+
+1. Module parameters provided directly in the Ansible task.
+2. `K8S_AUTH_*` environment variables.
+3. A kubeconfig file.
+4. In-cluster Kubernetes configuration (when running inside Kubernetes).
+
+In this setup, the environment variables provide all required connection details, so no kubeconfig file is required.
+
+For example, this task:
+
+```yaml
+- name: Wait for contour envoy daemonset to be ready
+  kubernetes.core.k8s_info:
+    api_version: apps/v1
+    kind: DaemonSet
+    namespace: contour
+    name: contour-envoy
+```
+
+automatically uses the Kubernetes API connection defined by:
+
+```bash
+K8S_AUTH_HOST
+K8S_AUTH_API_KEY
+K8S_AUTH_VERIFY_SSL
+```
+
+### Environment variables
+
+| Variable | Description |
+|---|---|
+| `K8S_AUTH_HOST` | Kubernetes API server endpoint. Example: `https://my-cluster:6443` |
+| `K8S_AUTH_API_KEY` | Kubernetes bearer token used for authentication. This is typically a ServiceAccount token or another Kubernetes API token with the required RBAC permissions. |
+| `K8S_AUTH_VERIFY_SSL` | Controls TLS certificate verification. Set to `true` to verify the API server certificate. Set to `false` only when certificate verification is intentionally disabled. |
+
+### Authentication flow
+
+The connection flow is:
+
+```
+Ansible task
+    |
+    v
+kubernetes.core module
+    |
+    v
+Python Kubernetes client
+    |
+    +--> Reads K8S_AUTH_HOST
+    |
+    +--> Reads K8S_AUTH_API_KEY
+    |
+    +--> Reads K8S_AUTH_VERIFY_SSL
+    |
+    v
+Authenticated request to Kubernetes API server
+```
+
+### Security considerations
+
+The API token must have sufficient Kubernetes RBAC permissions for the operations performed by the role.
+
+For example, installing Contour requires permissions to create and manage resources such as:
+
+- Namespaces
+- Deployments
+- DaemonSets
+- Services
+- ConfigMaps
+- ServiceAccounts
+- Roles and RoleBindings
+- Custom Resource Definitions (CRDs)
+
+For production environments:
+
+- Use a dedicated ServiceAccount with the minimum required permissions.
+- Store the token securely using a secrets manager or Ansible Vault.
+- Keep `K8S_AUTH_VERIFY_SSL=true` whenever possible.
+- Avoid exposing API tokens in logs, CI output, or plain text configuration files.
 
 ---
 
