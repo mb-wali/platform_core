@@ -1,0 +1,31 @@
+# https://projectcontour.io/docs/v1.10.0/config/websockets/
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: rancher
+  namespace: cattle-system
+spec:
+  virtualhost:
+    fqdn: {{ rancher_hostname }}
+
+  routes:
+    - conditions:
+        - prefix: /
+
+      enableWebsockets: true # Setting this to true enables websocket for all paths that match / this allows runcher UI to do exec pod
+
+      timeoutPolicy:
+        idle: infinity
+        response: infinity
+
+      requestHeadersPolicy:
+        set:
+          - name: X-Forwarded-Proto
+            value: https
+          - name: X-Forwarded-Port
+            value: "443"
+          - name: X-Forwarded-Host
+            value: {{ rancher_hostname }}
+      services:
+        - name: rancher
+          port: 80

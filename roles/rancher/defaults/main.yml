@@ -1,0 +1,6 @@
+rancher_helm_version: 2.14.3
+rancher_namespace: cattle-system
+rancher_hostname: rancher.example.com
+rancher_bootstrap_pass: somerandompassword
+rancher_server_replicas: 1
+rancher_HTTPPorxy: true
