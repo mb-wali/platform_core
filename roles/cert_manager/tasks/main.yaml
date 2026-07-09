@@ -1,0 +1,58 @@
+---
+- name: Ensure cert-manager values directory exists
+  ansible.builtin.file:
+    path: /tmp/cert-manager
+    state: directory
+    mode: "0755"
+
+- name: Render cert-manager values file
+  ansible.builtin.template:
+    src: values.yaml.j2
+    dest: /tmp/cert-manager/values.yaml
+    mode: "0644"
+
+- name: Add cert-manager via jetstack Helm repo
+  kubernetes.core.helm_repository:
+    name: jetstack
+    repo_url: https://charts.jetstack.io
+
+- name: Install or upgrade cert-manager
+  kubernetes.core.helm:
+    name: cert-manager
+    chart_ref: jetstack/cert-manager
+    chart_version: "{{ cert_helm_version }}"
+    release_namespace: cert-manager
+    create_namespace: true
+    values_files:
+      - /tmp/cert-manager/values.yaml
+    state: present
+
+- name: Wait for cert-manager deployment to be ready
+  kubernetes.core.k8s_info:
+    api_version: apps/v1
+    kind: Deployment
+    namespace: cert-manager
+    name: cert-manager
+  register: cert_manager_deployment
+  retries: 30
+  delay: 10
+  until: >
+    cert_manager_deployment.resources | length > 0 and
+    (
+      cert_manager_deployment.resources[0].status.readyReplicas | default(0)
+    ) == (
+      cert_manager_deployment.resources[0].status.replicas | default(0)
+    )
+
+- name: Render ClusterIssuer manifest
+  ansible.builtin.template:
+    src: clusterissuer.yaml.j2
+    dest: /tmp/cert-manager/clusterissuer.yaml
+    mode: "0644"
+  when: cert_is_selfsigned
+
+- name: Apply ClusterIssuer
+  kubernetes.core.k8s:
+    state: present
+    src: /tmp/cert-manager/clusterissuer.yaml
+  when: cert_is_selfsigned
