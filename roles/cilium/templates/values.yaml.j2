@@ -40,7 +40,7 @@ hubble:
       tls: []  # TLS handled externally
 
   relay:
-    enabled: false # true  # does not work with kyverno
+    enabled: {{ cilium_relay_enabled }} # true  # does not work with kyverno
 
 debug:
   enabled: {{ cilium_debug_enabled | lower }}

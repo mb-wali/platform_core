@@ -10,6 +10,7 @@ cilium_debug_verbose: ""
 cilium_clusterPoolIPv4PodCIDRList: "10.0.0.0/8"
 cilium_operator_replicas: 2
 cilium_enforce_mode: "default"
+cilium_relay_enabled: false
 
 ## ingress controller
 cilium_ingress_controller_enable: false
