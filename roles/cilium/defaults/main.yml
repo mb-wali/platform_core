@@ -7,13 +7,15 @@ cilium_clusterPoolIPv4PodCIDRList: "10.0.0.0/8"
 cilium_operator_replicas: 2
 cilium_enforce_mode: "default"
 
-# hubble
-cilium_ingress_class: "nginx"
+# hubble UI
 cilium_hubble_ui_enabled: false
-cilium_hubble_ui_ingress_enabled: false
-cilium_ingress_host: "hubble.example.com"
 cilium_relay_enabled: false
 
+# hubble UI ingress
+## disabled: use oauth2proxy for gateway proxy
+cilium_ingress_class: "nginx"
+cilium_hubble_ui_ingress_enabled: false
+cilium_ingress_host: "hubble.example.com"
 
 ## ingress controller
 cilium_ingress_controller_enable: false
