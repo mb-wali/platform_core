@@ -1,0 +1,322 @@
+# https://github.com/argoproj/argo-helm/blob/main/charts/argocd-apps/values.yaml
+#
+# WARNINIG: any removal of any project will result in cleanup projects and its apps
+#
+
+projects:
+
+{% for project in projects %}
+  {{ project.name }}:
+    namespace: argocd
+    description: Dedicated project for {{ project.name }}
+
+    sourceRepos:
+      - '*'
+
+    destinations:
+{% for ns in project.namespaces %}
+      - namespace: {{ ns }}
+        server: https://kubernetes.default.svc
+{% endfor %}
+
+    clusterResourceWhitelist: []
+
+    orphanedResources:
+      warn: true
+
+    roles:
+      - name: {{ project.name }} role
+        description: {{ project.name }} access based of oidc group
+        policies:
+          - p, proj:{{ project.role }}:devs, applications, get, {{ project.name }}/*, allow
+          - p, proj:{{ project.role }}:devs, applications, create, {{ project.name }}/*, allow
+          - p, proj:{{ project.role }}:devs, applications, update, {{ project.name }}/*, allow
+          - p, proj:{{ project.role }}:devs, applications, delete, {{ project.name }}/*, allow
+          - p, proj:{{ project.role }}:devs, applications, sync, {{ project.name }}/*, allow
+          - p, proj:{{ project.role }}:devs, logs, get, {{ project.name }}/*, allow
+
+{% endfor %}
+
+
+{% for dev in developers %}
+  {{ dev.project }}:
+    namespace: argocd
+    description: Development playground for {{ dev.name }}
+
+    sourceRepos:
+      - '*'
+
+    destinations:
+{% for ns in dev.namespaces %}
+      - namespace: {{ ns }}
+        server: https://kubernetes.default.svc
+{% endfor %}
+
+    clusterResourceWhitelist: []
+
+    orphanedResources:
+      warn: true
+
+    roles:
+      - name: developer
+        description: Developer access
+        policies:
+          - p, proj:{{ dev.project }}:developer, applications, get, {{ dev.project }}/*, allow
+          - p, proj:{{ dev.project }}:developer, applications, create, {{ dev.project }}/*, allow
+          - p, proj:{{ dev.project }}:developer, applications, update, {{ dev.project }}/*, allow
+          - p, proj:{{ dev.project }}:developer, applications, delete, {{ dev.project }}/*, allow
+          - p, proj:{{ dev.project }}:developer, applications, sync, {{ dev.project }}/*, allow
+          - p, proj:{{ dev.project }}:developer, logs, get, {{ dev.project }}/*, allow
+
+{% endfor %}
+
+  k6:
+    description: k6 platform applications
+
+    sourceRepos:
+      - 'https://github.com/tugraz-rdm/argocd-deployments'
+
+    destinations:
+      - namespace: k6
+        server: https://kubernetes.default.svc
+
+    # create namespace before ahead..
+    clusterResourceWhitelist: []
+
+    namespaceResourceWhitelist:
+      # core
+      - group: ''
+        kind: ConfigMap
+      - group: ''
+        kind: Service
+      - group: ''
+        kind: ServiceAccount
+
+      # workloads
+      - group: apps
+        kind: Deployment
+
+      # # autoscaling
+      # - group: autoscaling
+      #   kind: HorizontalPodAutoscaler
+
+      # batch
+      - group: batch
+        kind: Job
+      - group: batch
+        kind: CronJob
+
+      # policy
+      - group: policy
+        kind: PodDisruptionBudget
+
+    orphanedResources:
+      warn: true
+
+    # # TODO
+    # roles:
+    #   - name: k6_dev
+    #     description: k6 devs
+    #     policies:
+    #       # Applications (UI + management)
+    #       - p, proj:k6:devs, applications, get, k6/*, allow
+    #       # - p, proj:k6:devs, applications, create, k6/*, allow
+    #       - p, proj:k6:devs, applications, update, k6/*, allow
+    #       - p, proj:k6:devs, applications, sync, k6/*, allow
+
+    #       # Find a better way to only allow deleting pods eg
+    #       - p, proj:k6:devs, applications, delete/*, k6/*, allow
+    #       # # Optional (commonly useful for devs)
+    #       # - p, proj:k6:devs, applications, delete, k6/*, allow
+
+    #       # Logs
+    #       - p, proj:k6:devs, logs, get, k6/*, allow
+
+
+    #     groups:
+    #       - project-admins
+#########################################
+  lcalyze:
+    description: lcalyze platform applications
+
+    sourceRepos:
+      - '*'
+
+    destinations:
+      - namespace: lcalyze
+        server: 'https://kubernetes.default.svc'
+
+    # CRDs, ClusterRoles, etc
+    clusterResourceWhitelist: []
+
+    orphanedResources:
+      warn: true
+
+    roles:
+      - name: devs
+        description: Developer access to lcalyze project
+        policies:
+          # Applications
+          - p, proj:lcalyze:devs, applications, get, lcalyze/*, allow
+          # - p, proj:lcalyze:devs, applications, create, lcalyze/*, allow
+          - p, proj:lcalyze:devs, applications, update, lcalyze/*, allow
+          - p, proj:lcalyze:devs, applications, sync, lcalyze/*, allow
+
+          # Allow deleting resources inside apps
+          # - p, proj:lcalyze:devs, applications, delete/*, lcalyze/*, allow
+
+          # Logs
+          - p, proj:lcalyze:devs, logs, get, lcalyze/*, allow
+
+#########################################
+  inveniordm:
+    description: inveniordm platform applications
+
+    sourceRepos:
+      - '*'
+
+    destinations:
+      - name: '*'
+        namespace: 'inveniordm'
+        server: 'https://kubernetes.default.svc'
+      - name: '*'
+        namespace: 'mq'
+        server: 'https://kubernetes.default.svc'
+
+        
+    # CRDs, ClusterRoles, etc
+    clusterResourceWhitelist: []
+
+    orphanedResources:
+      warn: true
+
+    roles:
+      - name: devs
+        description: Developer access to inveniordm project
+        policies:
+          # Applications
+          - p, proj:inveniordm:devs, applications, get, inveniordm/*, allow
+          # - p, proj:inveniordm:devs, applications, create, inveniordm/*, allow
+          - p, proj:inveniordm:devs, applications, update, inveniordm/*, allow
+          - p, proj:inveniordm:devs, applications, sync, inveniordm/*, allow
+
+          # Allow deleting resources inside apps
+          # - p, proj:inveniordm:devs, applications, delete/*, inveniordm/*, allow
+
+          # Logs
+          - p, proj:inveniordm:devs, logs, get, inveniordm/*, allow
+
+#########################################
+# TODO: change the role from lcalyze to dmp
+  dmp:
+    description: dmp platform applications
+
+    sourceRepos:
+      - '*'
+
+    destinations:
+      - name: '*'
+        namespace: 'dmp'
+        server: 'https://kubernetes.default.svc'
+
+        
+    # CRDs, ClusterRoles, etc
+    clusterResourceWhitelist: []
+
+    orphanedResources:
+      warn: true
+
+    roles:
+      - name: devs
+        description: Developer access to dmp project
+        policies:
+          # Applications
+          - p, proj:dmp:devs, applications, get, dmp/*, allow
+          - p, proj:dmp:devs, applications, create, dmp/*, allow
+          - p, proj:dmp:devs, applications, update, dmp/*, allow
+          - p, proj:dmp:devs, applications, sync, dmp/*, allow
+
+          # Allow deleting resources inside apps
+          # - p, proj:dmp:devs, applications, delete/*, dmp/*, allow
+
+          # Logs
+          - p, proj:dmp:devs, logs, get, dmp/*, allow
+
+#########################################
+  elabftw:
+    description: elabftw platform applications
+
+    sourceRepos:
+      - '*'
+
+    destinations:
+      - name: '*'
+        namespace: 'elabftw'
+        server: 'https://kubernetes.default.svc'
+        
+    # CRDs, ClusterRoles, etc
+    clusterResourceWhitelist: []
+
+    orphanedResources:
+      warn: true
+
+    roles:
+      - name: devs
+        description: Developer access to elabftw project
+        policies:
+          # Applications
+          - p, proj:elabftw:devs, applications, get, elabftw/*, allow
+          # - p, proj:elabftw:devs, applications, create, elabftw/*, allow
+          - p, proj:elabftw:devs, applications, update, elabftw/*, allow
+          - p, proj:elabftw:devs, applications, sync, elabftw/*, allow
+
+          # Allow deleting resources inside apps
+          # - p, proj:elabftw:devs, applications, delete/*, elabftw/*, allow
+
+          # Logs
+          - p, proj:elabftw:devs, logs, get, elabftw/*, allow
+
+#########################################
+  databases:
+    description: databases platform applications
+
+    sourceRepos:
+      - '*'
+
+    destinations:
+      - name: '*'
+        namespace: 'mysql'
+        server: 'https://kubernetes.default.svc'
+        
+    # CRDs, ClusterRoles, etc
+    clusterResourceWhitelist: []
+
+    orphanedResources:
+      warn: true
+
+############################################################
+#################### Applications ##########################
+
+# # disable application creation for now...
+# applications:
+#   k6-quick-test:
+#     project: k6
+#     source:
+#       repoURL: https://github.com/tugraz-rdm/argocd-deployments.git
+#       path: kustomize/k6/overlays/dev/
+#       targetRevision: k6
+
+#     destination:
+#       server: https://kubernetes.default.svc
+#       namespace: k6
+
+#     syncPolicy:
+#       automated:
+#         prune: true
+#         selfHeal: true
+#         enabled: true
+
+#       syncOptions:
+#         - CreateNamespace=true
+
+#     revisionHistoryLimit: 3

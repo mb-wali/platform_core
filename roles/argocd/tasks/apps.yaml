@@ -1,0 +1,20 @@
+- name: Create developer namespaces
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ item.1 }}"
+  loop: "{{ developers | subelements('namespaces') }}"
+
+
+- name: Create projects namespaces
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ item.1 }}"
+  loop: "{{ projects | subelements('namespaces') }}"
