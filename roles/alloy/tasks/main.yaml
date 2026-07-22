@@ -1,0 +1,45 @@
+---
+- name: Ensure Alloy values directory exists
+  ansible.builtin.file:
+    path: /tmp/alloy
+    state: directory
+    mode: "0755"
+
+- name: Render Alloy values file
+  ansible.builtin.template:
+    src: values.yaml.j2
+    dest: /tmp/alloy/values.yaml
+    mode: "0644"
+
+- name: Add Alloy Grafana Helm repo
+  kubernetes.core.helm_repository:
+    name: alloy
+    repo_url: https://grafana.github.io/helm-charts
+
+- name: Install or upgrade Alloy
+  kubernetes.core.helm:
+    name: alloy
+    chart_ref: alloy/alloy
+    chart_version: "{{ alloy_helm_version }}"
+    release_namespace: "{{ alloy_namespace }}"
+    create_namespace: true
+    values_files:
+      - /tmp/alloy/values.yaml
+    state: present
+
+- name: Wait for Alloy DaemonSet to be ready
+  kubernetes.core.k8s_info:
+    api_version: apps/v1
+    kind: DaemonSet
+    namespace: monitoring
+    name: alloy
+  register: alloy_ds
+  retries: 30
+  delay: 10
+  until: >
+    alloy_ds.resources | length > 0 and
+    (
+      alloy_ds.resources[0].status.numberReady | default(0)
+    ) == (
+      alloy_ds.resources[0].status.desiredNumberScheduled | default(0)
+    )

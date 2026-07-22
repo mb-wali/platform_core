@@ -1,0 +1,58 @@
+# https://github.com/grafana-community/helm-charts/blob/main/charts/loki/values.yaml
+
+write:
+  replicas: {{ loki_replicas }}
+read:
+  replicas: {{ loki_replicas }}
+backend:
+  replicas: {{ loki_replicas }}
+
+
+loki:
+  # Should authentication be enabled
+  auth_enabled: {{ loki_auth_enabled }}
+
+  commonConfig:
+    replication_factor: {{ loki_replicas }}
+
+  storage:
+    bucketNames:
+      chunks: {{ loki_bucket_chunks }}
+      ruler: {{ loki_bucket_ruler }}
+      admin: {{ loki_bucket_admin }}
+    type: s3
+    s3:
+      endpoint: {{ loki_s3_endoint }}
+      region: local
+      secretAccessKey: {{ loki_s3_secret_key }}
+      accessKeyId: {{ loki_s3_access_keyId }}
+      # signatureVersion: null
+      s3ForcePathStyle: {{ loki_s3_forcePathStyle }}
+      insecure: {{ loki_s3_insecure }}
+      # http_config: {}
+      # -- Check https://grafana.com/docs/loki/latest/configure/#s3_storage_config for more info on how to provide a backoff_config
+      backoff_config: {}
+      disable_dualstack: false
+
+  # -- Check https://grafana.com/docs/loki/latest/configuration/#schema_config for more info on how to configure schemas
+  schemaConfig:
+    configs:
+      - from: 2024-04-01
+        store: tsdb
+        object_store: s3
+        schema: v13
+        index:
+          prefix: loki_index_
+          period: 24h
+# Configuration for the gateway
+gateway:
+  enabled: {{ loki_gateway_enable }}
+  ingress:
+    enabled: {{ loki_gateway_ingress_enable }}
+    ingressClassName: "{{ clusterIngressClassName }}"
+    hosts:
+      - host: {{ loki_gateway_ingress_host }}
+        paths:
+          - path: /
+            pathType: Prefix
+    tls: []
