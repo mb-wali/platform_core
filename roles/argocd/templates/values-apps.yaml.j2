@@ -64,7 +64,7 @@ projects:
           - p, proj:{{ dev.project }}:developer, applications, get, {{ dev.project }}/*, allow
           - p, proj:{{ dev.project }}:developer, applications, create, {{ dev.project }}/*, allow
           - p, proj:{{ dev.project }}:developer, applications, update, {{ dev.project }}/*, allow
-          - p, proj:{{ dev.project }}:developer, applications, delete, {{ dev.project }}/*, allow
+          - p, proj:{{ dev.project }}:developer, applications, delete/*, {{ dev.project }}/*, allow
           - p, proj:{{ dev.project }}:developer, applications, sync, {{ dev.project }}/*, allow
           - p, proj:{{ dev.project }}:developer, logs, get, {{ dev.project }}/*, allow
 
