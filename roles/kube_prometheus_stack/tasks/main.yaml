@@ -1,0 +1,44 @@
+---
+- name: Ensure prometheus-community values directory exists
+  ansible.builtin.file:
+    path: /tmp/prometheus-community
+    state: directory
+    mode: "0755"
+
+- name: Render prometheus-community values file
+  ansible.builtin.template:
+    src: values.yaml.j2
+    dest: /tmp/prometheus-community/values.yaml
+    mode: "0644"
+
+- name: Add kube_prometheus_stack Helm repo
+  kubernetes.core.helm_repository:
+    name: prometheus-community
+    repo_url: https://prometheus-community.github.io/helm-charts
+
+- name: Install or upgrade kube-prometheus-stack
+  kubernetes.core.helm:
+    name: kube-prometheus-stack
+    chart_ref: prometheus-community/kube-prometheus-stack
+    chart_version: "{{ grafana_helm_version }}"
+    release_namespace: "{{ grafana_namespace }}"
+    create_namespace: true
+    values_files:
+      - /tmp/prometheus-community/values.yaml
+    state: present
+
+- name: Wait for kube-prometheus-stack deployment to be ready
+  kubernetes.core.k8s_info:
+    api_version: apps/v1
+    kind: Deployment
+    namespace: "{{ grafana_namespace }}"
+    name: kube-prometheus-stack-grafana
+  register: grafana_deployment
+  retries: 30
+  delay: 10
+  until: >
+    grafana_deployment.resources | length > 0 and
+    grafana_deployment.resources[0].status.observedGeneration | default(0) ==
+    grafana_deployment.resources[0].metadata.generation and
+    grafana_deployment.resources[0].status.readyReplicas | default(0) ==
+    grafana_deployment.resources[0].spec.replicas

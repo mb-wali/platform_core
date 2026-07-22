@@ -1,0 +1,13 @@
+grafana_helm_version: 81.5.1
+grafana_namespace: monitoring
+grafana_domain_url : grafana.example.com
+
+grafana_oauth_realm_url: https://keycloak.example.com/auth/realms/test
+grafana_oauth_client_sec: <client-secret>
+grafana_oauth_roles: "contains(roles[*], 'admin') && 'Admin' || contains(roles[*], 'editor') && 'Editor' || 'Viewer'"
+grafana_smtp_enable: true
+grafana_smtp_host: smtp-client.smtpclient.svc.cluster.local:25
+
+prometheus_ingress_enable: false
+prometheus_domain_url: prometheus.example.com
+prometheus_remote_write: false
