@@ -113,49 +113,6 @@
 #################### ArgoCD APPS ##
 ###################################
 
-## TODO: move to apps helm values
-- name: create the lcalyze namespace
-  kubernetes.core.k8s:
-    name: "lcalyze"
-    state: present
-    kind: namespace
-    api_version: v1
-  when: argocd_apps | bool
-
-- name: create the inveniordm namespace
-  kubernetes.core.k8s:
-    name: "inveniordm"
-    state: present
-    kind: namespace
-    api_version: v1
-  when: argocd_apps | bool
-
-- name: create the dmp namespace
-  kubernetes.core.k8s:
-    name: "dmp"
-    state: present
-    kind: namespace
-    api_version: v1
-  when: argocd_apps | bool
-
-- name: create the elabftw namespace
-  kubernetes.core.k8s:
-    name: "elabftw"
-    state: present
-    kind: namespace
-    api_version: v1
-  when: argocd_apps | bool
-
-- name: create the mysql namespace
-  kubernetes.core.k8s:
-    name: "mysql"
-    state: present
-    kind: namespace
-    api_version: v1
-  when: argocd_apps | bool
-############# end of move
-
-
 - name: Ensure ArgoCD Apps values directory exists
   ansible.builtin.file:
     path: /tmp/argocdapps

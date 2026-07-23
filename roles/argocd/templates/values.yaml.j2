@@ -107,43 +107,6 @@ configs:
       p, role:project-admins, projects, *, default, deny
 
 
-      ### inveniordm
-      # Group → roles
-      g, {{ argocd_inveniordm_role }}, role:inveniordm-devs
-      g, {{ argocd_inveniordm_role }}, proj:inveniordm:devs
-
-      # GLOBAL RBAC (UI visibility)
-      p, role:inveniordm-devs, clusters, get, *, allow
-      p, role:inveniordm-devs, repositories, get, *, allow
-
-
-      ### lcalyze
-      # Group → roles
-      g, {{ argocd_lcalyze_role }}, role:lcalyze-devs
-      g, {{ argocd_lcalyze_role }}, proj:lcalyze:devs
-
-      # GLOBAL RBAC (UI visibility)
-      p, role:lcalyze-devs, clusters, get, *, allow
-      p, role:lcalyze-devs, repositories, get, *, allow
-
-      ### damap
-      # Group → roles
-      g, {{ argocd_dmp_role }}, role:dmp-devs
-      g, {{ argocd_dmp_role }}, proj:dmp:devs
-
-      # GLOBAL RBAC (UI visibility)
-      p, role:dmp-devs, clusters, get, *, allow
-      p, role:dmp-devs, repositories, get, *, allow
-
-      ### elabftw
-      # Group → roles
-      g, {{ argocd_elabftw_role }}, role:elabftw-devs
-      g, {{ argocd_elabftw_role }}, proj:elabftw:devs
-
-      # GLOBAL RBAC (UI visibility)
-      p, role:elabftw-devs, clusters, get, *, allow
-      p, role:elabftw-devs, repositories, get, *, allow
-
       ### developers
 
       {% for dev in developers %}
