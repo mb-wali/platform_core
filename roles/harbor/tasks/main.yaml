@@ -1,0 +1,79 @@
+---
+- name: Ensure Harbor values directory exists
+  ansible.builtin.file:
+    path: /tmp/harbor
+    state: directory
+    mode: "0755"
+
+- name: Render Harbor values file
+  ansible.builtin.template:
+    src: values.yaml.j2
+    dest: /tmp/harbor/values.yaml
+    mode: "0644"
+
+- name: Add Harbor Helm repo
+  kubernetes.core.helm_repository:
+    name: harbor
+    repo_url: https://helm.goharbor.io
+
+- name: Install or upgrade Harbor
+  kubernetes.core.helm:
+    name: harbor
+    chart_ref: harbor/harbor
+    chart_version: "{{ harbor_helm_version }}"
+    release_namespace: "{{ harbor_namespace }}"
+    create_namespace: true
+    values_files:
+      - /tmp/harbor/values.yaml
+    state: present
+
+- name: Wait for harbor core deployment to be ready
+  kubernetes.core.k8s_info:
+    api_version: apps/v1
+    kind: Deployment
+    namespace: "{{ harbor_namespace }}"
+    name: harbor-core
+  register: harbor_core
+  retries: 30
+  delay: 10
+  until: >
+    harbor_core.resources | length > 0 and
+    (
+      harbor_core.resources[0].status.readyReplicas | default(0)
+    ) == (
+      harbor_core.resources[0].status.replicas | default(0)
+    )
+
+- name: Wait for harbor registry deployment to be ready
+  kubernetes.core.k8s_info:
+    api_version: apps/v1
+    kind: Deployment
+    namespace: "{{ harbor_namespace }}"
+    name: harbor-registry
+  register: harbor_registry
+  retries: 30
+  delay: 10
+  until: >
+    harbor_registry.resources | length > 0 and
+    (
+      harbor_registry.resources[0].status.readyReplicas | default(0)
+    ) == (
+      harbor_registry.resources[0].status.replicas | default(0)
+    )
+
+- name: Wait for harbor database to be ready
+  kubernetes.core.k8s_info:
+    api_version: apps/v1
+    kind: StatefulSet
+    namespace: "{{ harbor_namespace }}"
+    name: harbor-database
+  register: harbor_database
+  retries: 30
+  delay: 10
+  until: >
+    harbor_database.resources | length > 0 and
+    (
+      harbor_database.resources[0].status.readyReplicas | default(0)
+    ) == (
+      harbor_database.resources[0].status.replicas | default(0)
+    )
