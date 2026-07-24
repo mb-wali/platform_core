@@ -15,8 +15,8 @@ spec:
       enableWebsockets: true # Setting this to true enables websocket for all paths that match / this allows runcher UI to do exec pod
 
       timeoutPolicy:
-        idle: infinity
-        response: infinity
+        idle: 1h
+        response: 1h
 
       requestHeadersPolicy:
         set:
