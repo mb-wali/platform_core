@@ -3,8 +3,10 @@ grafana_namespace: monitoring
 grafana_domain_url : grafana.example.com
 
 grafana_oauth_realm_url: https://keycloak.example.com/auth/realms/test
-grafana_oauth_client_sec: <client-secret>
+grafana_oauth_client_secret: <client-secret>
 grafana_oauth_roles: "contains(roles[*], 'admin') && 'Admin' || contains(roles[*], 'editor') && 'Editor' || 'Viewer'"
+grafana_oauth_allowed_groups: monitoring-users,platform-admins,developers
+
 grafana_smtp_enable: true
 grafana_smtp_host: smtp-client.smtpclient.svc.cluster.local:25
 
