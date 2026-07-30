@@ -20,6 +20,9 @@ grafana:
     # finalizers:
     #   - kubernetes.io/pvc-protection
 
+  # built in dahboards
+  defaultDashboardsEnabled: true
+
   grafana.ini:
     smtp: # https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#smtp
       enabled: {{ grafana_smtp_enable }}
