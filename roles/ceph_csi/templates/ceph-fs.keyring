@@ -1,0 +1,3 @@
+[client.rdmprodkubefs]
+key =  ${DEV_CEPHFS_USER_KEY}
+

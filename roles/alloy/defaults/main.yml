@@ -1,0 +1,4 @@
+alloy_helm_version: 1.10.0
+alloy_namespace: monitoring
+alloy_ingress_host: alloy.example.com
+alloy_ingress_enabled: false

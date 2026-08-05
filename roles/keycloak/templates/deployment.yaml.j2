@@ -55,6 +55,13 @@ spec:
       containers:
       - name: keycloak
         image: {{ keycloak_image }}:{{ keycloak_image_tag }}
+        resources:
+          requests:
+            cpu: {{ keycloak_resources.requests.cpu }}
+            memory: {{ keycloak_resources.requests.memory }}
+          limits:
+            cpu: {{ keycloak_resources.limits.cpu }}
+            memory: {{ keycloak_resources.limits.memory }}
         # ---- CONTAINER-LEVEL SECURITY ----
         securityContext:
           runAsNonRoot: true

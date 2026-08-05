@@ -1,0 +1,79 @@
+---
+- name: Ensure Loki values directory exists
+  ansible.builtin.file:
+    path: /tmp/loki
+    state: directory
+    mode: "0755"
+
+- name: Render Loki values file
+  ansible.builtin.template:
+    src: values.yaml.j2
+    dest: /tmp/loki/values.yaml
+    mode: "0644"
+
+- name: Add Loki Helm repo
+  kubernetes.core.helm_repository:
+    name: loki
+    repo_url: https://grafana-community.github.io/helm-charts
+
+- name: Install or upgrade Contour
+  kubernetes.core.helm:
+    name: loki
+    chart_ref: loki/loki
+    chart_version: "{{ loki_helm_version }}"
+    release_namespace: "{{ loki_namespace }}"
+    create_namespace: true
+    values_files:
+      - /tmp/loki/values.yaml
+    state: present
+
+- name: Wait for Loki StatefulSet to be ready
+  kubernetes.core.k8s_info:
+    api_version: apps/v1
+    kind: StatefulSet
+    namespace: "{{ loki_namespace }}"
+    name: loki
+  register: loki_sts
+  retries: 30
+  delay: 10
+  until: >
+    loki_sts.resources | length > 0 and
+    (
+      loki_sts.resources[0].status.readyReplicas | default(0)
+    ) == (
+      loki_sts.resources[0].status.replicas | default(0)
+    )
+
+- name: Wait for Loki chunks cache StatefulSet to be ready
+  kubernetes.core.k8s_info:
+    api_version: apps/v1
+    kind: StatefulSet
+    namespace: "{{ loki_namespace }}"
+    name: loki-chunks-cache
+  register: loki_chunks_cache_sts
+  retries: 30
+  delay: 10
+  until: >
+    loki_chunks_cache_sts.resources | length > 0 and
+    (
+      loki_chunks_cache_sts.resources[0].status.readyReplicas | default(0)
+    ) == (
+      loki_chunks_cache_sts.resources[0].status.replicas | default(0)
+    )
+
+- name: Wait for Loki results cache StatefulSet to be ready
+  kubernetes.core.k8s_info:
+    api_version: apps/v1
+    kind: StatefulSet
+    namespace: "{{ loki_namespace }}"
+    name: loki-results-cache
+  register: loki_results_cache_sts
+  retries: 30
+  delay: 10
+  until: >
+    loki_results_cache_sts.resources | length > 0 and
+    (
+      loki_results_cache_sts.resources[0].status.readyReplicas | default(0)
+    ) == (
+      loki_results_cache_sts.resources[0].status.replicas | default(0)
+    )

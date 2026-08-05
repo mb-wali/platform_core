@@ -1,0 +1,99 @@
+# https://github.com/argoproj/argo-helm/blob/main/charts/argocd-apps/values.yaml
+#
+# WARNINIG: any removal of any project will result in cleanup projects and its apps
+#
+
+projects:
+
+{% for project in projects %}
+  {{ project.name }}:
+    namespace: argocd
+    description: Dedicated project for {{ project.name }}
+
+    sourceRepos:
+      - '*'
+
+    destinations:
+{% for ns in project.namespaces %}
+      - namespace: {{ ns }}
+        server: https://kubernetes.default.svc
+{% endfor %}
+
+    clusterResourceWhitelist: []
+
+    orphanedResources:
+      warn: true
+
+    roles:
+      - name: {{ project.name }} role
+        description: {{ project.name }} access based of oidc group
+        policies:
+          - p, proj:{{ project.role }}:devs, applications, get, {{ project.name }}/*, allow
+          - p, proj:{{ project.role }}:devs, applications, create, {{ project.name }}/*, allow
+          - p, proj:{{ project.role }}:devs, applications, update, {{ project.name }}/*, allow
+          - p, proj:{{ project.role }}:devs, applications, delete, {{ project.name }}/*, allow
+          - p, proj:{{ project.role }}:devs, applications, sync, {{ project.name }}/*, allow
+          - p, proj:{{ project.role }}:devs, logs, get, {{ project.name }}/*, allow
+
+{% endfor %}
+
+
+{% for dev in developers %}
+  {{ dev.project }}:
+    namespace: argocd
+    description: Development playground for {{ dev.name }}
+
+    sourceRepos:
+      - '*'
+
+    destinations:
+{% for ns in dev.namespaces %}
+      - namespace: {{ ns }}
+        server: https://kubernetes.default.svc
+{% endfor %}
+
+    clusterResourceWhitelist: []
+
+    orphanedResources:
+      warn: true
+
+    roles:
+      - name: developer
+        description: Developer access
+        policies:
+          - p, proj:{{ dev.project }}:developer, applications, get, {{ dev.project }}/*, allow
+          - p, proj:{{ dev.project }}:developer, applications, create, {{ dev.project }}/*, allow
+          - p, proj:{{ dev.project }}:developer, applications, update, {{ dev.project }}/*, allow
+          - p, proj:{{ dev.project }}:developer, applications, delete/*, {{ dev.project }}/*, allow
+          - p, proj:{{ dev.project }}:developer, applications, sync, {{ dev.project }}/*, allow
+          - p, proj:{{ dev.project }}:developer, logs, get, {{ dev.project }}/*, allow
+
+{% endfor %}
+
+
+############################################################
+#################### Applications ##########################
+
+# # disable application creation for now...
+# applications:
+#   k6-quick-test:
+#     project: k6
+#     source:
+#       repoURL: https://github.com/tugraz-rdm/argocd-deployments.git
+#       path: kustomize/k6/overlays/dev/
+#       targetRevision: k6
+
+#     destination:
+#       server: https://kubernetes.default.svc
+#       namespace: k6
+
+#     syncPolicy:
+#       automated:
+#         prune: true
+#         selfHeal: true
+#         enabled: true
+
+#       syncOptions:
+#         - CreateNamespace=true
+
+#     revisionHistoryLimit: 3

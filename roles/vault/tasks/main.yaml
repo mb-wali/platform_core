@@ -1,0 +1,45 @@
+---
+- name: Ensure Vault values directory exists
+  ansible.builtin.file:
+    path: /tmp/vault
+    state: directory
+    mode: "0755"
+
+- name: Render Vault values file
+  ansible.builtin.template:
+    src: values.yaml.j2
+    dest: /tmp/vault/values.yaml
+    mode: "0644"
+
+- name: Add hashicorp Helm repo
+  kubernetes.core.helm_repository:
+    name: hashicorp
+    repo_url: https://helm.releases.hashicorp.com
+
+- name: Install or upgrade Vault
+  kubernetes.core.helm:
+    name: vault
+    chart_ref: hashicorp/vault
+    chart_version: "{{ vault_helm_version }}"
+    release_namespace: vault
+    create_namespace: true
+    values_files:
+      - /tmp/vault/values.yaml
+    state: present
+
+- name: Wait for Vault StatefulSet to be ready
+  kubernetes.core.k8s_info:
+    api_version: apps/v1
+    kind: StatefulSet
+    namespace: vault
+    name: vault
+  register: vault_sts
+  retries: 30
+  delay: 10
+  until: >
+    vault_sts.resources | length > 0 and
+    (
+      vault_sts.resources[0].status.readyReplicas | default(0)
+    ) == (
+      vault_sts.resources[0].status.replicas | default(0)
+    )

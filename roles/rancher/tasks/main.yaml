@@ -1,0 +1,58 @@
+---
+- name: Ensure Rancher values directory exists
+  ansible.builtin.file:
+    path: /tmp/rancher
+    state: directory
+    mode: "0755"
+
+- name: Render Rancher values file
+  ansible.builtin.template:
+    src: values.yaml.j2
+    dest: /tmp/rancher/values.yaml
+    mode: "0644"
+
+- name: Add Rancher stable Helm repo
+  kubernetes.core.helm_repository:
+    name: rancher-stable
+    repo_url: https://releases.rancher.com/server-charts/stable
+
+- name: Install or upgrade Rancher
+  kubernetes.core.helm:
+    name: rancher
+    chart_ref: rancher-stable/rancher
+    chart_version: "{{ rancher_helm_version }}"
+    release_namespace: "{{ rancher_namespace }}"
+    create_namespace: true
+    values_files:
+      - /tmp/rancher/values.yaml
+    state: present
+
+- name: Wait for Rancher deployment to be ready
+  kubernetes.core.k8s_info:
+    api_version: apps/v1
+    kind: Deployment
+    namespace: "{{ rancher_namespace }}"
+    name: rancher
+  register: rancher_deployment
+  retries: 30
+  delay: 10
+  until: >
+    rancher_deployment.resources | length > 0 and
+    (
+      rancher_deployment.resources[0].status.readyReplicas | default(0)
+    ) == (
+      rancher_deployment.resources[0].status.replicas | default(0)
+    )
+
+- name: Render HTTPPorxy manifest
+  ansible.builtin.template:
+    src: HTTPPorxy.yaml.j2
+    dest: /tmp/rancher/HTTPPorxy.yaml
+    mode: "0644"
+  when: rancher_HTTPPorxy
+
+- name: Apply HTTPPorxy
+  kubernetes.core.k8s:
+    state: present
+    src: /tmp/rancher/HTTPPorxy.yaml
+  when: rancher_HTTPPorxy

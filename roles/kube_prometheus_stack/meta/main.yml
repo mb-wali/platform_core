@@ -1,0 +1,8 @@
+galaxy_info:
+  role_name: kube_prometheus_stack
+  author: Mojib Wali
+  description: Deploy and manage kube_prometheus_stack via Helm
+  license: MIT
+  min_ansible_version: "2.16"
+
+dependencies: []

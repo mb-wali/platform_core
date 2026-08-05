@@ -28,6 +28,7 @@ Managed platform components include:
 - ☸️ **Rancher** — Cluster management and administration
 - 💾 **Ceph CSI** — Persistent storage integration and dynamic volume provisioning
 - 🚪 **Ingress Controllers / Gateway API** — Traffic management and external access
+- 🚪 **Cert Manager** — X.509 certificate management for Kubernetes
 - 📊 **Observability Stack** *(optional extension)* — Monitoring, logging, and platform visibility
 
 All components are deployed and configured using **Helm through Ansible**, providing:

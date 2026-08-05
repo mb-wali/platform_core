@@ -1,0 +1,19 @@
+---
+- name: Create Kubernetes registry pull secrets
+  kubernetes.core.k8s:
+    state: present
+    namespace: "{{ registry_namespace }}"
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: "{{ registry_secret.name }}"
+      type: kubernetes.io/dockerconfigjson
+      data:
+        .dockerconfigjson: "{{ lookup('template', 'dockerconfigjson.j2') | b64encode }}"
+  loop: "{{ k8s_registry_secrets | subelements('namespaces', skip_missing=True) }}"
+  loop_control:
+    label: "{{ registry_secret.name }} -> {{ registry_namespace }}"
+  vars:
+    registry_secret: "{{ item.0 }}"
+    registry_namespace: "{{ item.1 }}"

@@ -1,0 +1,142 @@
+---
+# Required to apply the policies before deploying the argocd
+- name: create the ArgoCD namespace
+  kubernetes.core.k8s:
+    name: "argocd"
+    state: present
+    kind: namespace
+    api_version: v1
+
+########################################
+############# Kyverno  policies
+# TODO: conditional
+########################################
+- name: Include Kyverno policies tasks
+  import_tasks: kyvernopolicies.yml
+########################################
+############# END Kyverno  policies
+########################################
+
+
+########################################
+############# AVP
+########################################
+- name: Apply ArgoCD Vault Plugin ConfigManagementPlugin in argocd ns
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('template', 'cmp_configmap.yaml') | from_yaml_all }}"
+
+- name: Create required secret for Argo CD Vault Plugin
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('template', 'argocd_vault_plugin_secret.yaml') | from_yaml_all }}"
+########################################
+############# ENDAVP
+########################################
+
+
+########################################
+############# ArgoCD repository
+########################################
+- name: Create required github app credentials
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        annotations:
+          managed-by: argocd.argoproj.io
+        labels:
+          argocd.argoproj.io/secret-type: repository
+        name: "{{ argocd_github_app_secret }}"
+        namespace: argocd
+      type: Opaque
+      data:
+        githubAppID: "{{ argocd_repositories_default_appId | b64encode }}"
+        githubAppInstallationID: "{{ argocd_repositories_default_installationId | b64encode }}"
+        type: "{{ argocd_repositories_default_type | b64encode }}"
+        url: "{{ argocd_repositories_default_url | b64encode }}"
+        githubAppPrivateKey: "{{ argocd_repositories_default_privateKey }}"
+        # project: dev  # or specific project
+
+########################################
+############# END ArgoCD repository
+########################################
+
+- name: Ensure ArgoCD values directory exists
+  ansible.builtin.file:
+    path: /tmp/argocd
+    state: directory
+    mode: "0755"
+
+- name: Render ArgoCD values file
+  ansible.builtin.template:
+    src: values.yaml.j2
+    dest: /tmp/argocd/values.yaml
+    mode: "0644"
+
+- name: Add ArgoCD Helm repo
+  kubernetes.core.helm_repository:
+    name: argo
+    repo_url: https://argoproj.github.io/argo-helm
+
+- name: Install or upgrade ArgoCD
+  kubernetes.core.helm:
+    name: argocd
+    chart_ref: argo/argo-cd
+    chart_version: "{{ argocd_helm_version }}"
+    release_namespace: argocd
+    create_namespace: true
+    values_files:
+      - /tmp/argocd/values.yaml
+    state: present
+
+- name: Wait for Argo CD Application Controller StatefulSet to be ready
+  kubernetes.core.k8s_info:
+    api_version: apps/v1
+    kind: StatefulSet
+    namespace: argocd
+    name: argocd-application-controller
+  register: argocd_app_controller_sts
+  retries: 30
+  delay: 10
+  until: >
+    argocd_app_controller_sts.resources | length > 0 and
+    (
+      argocd_app_controller_sts.resources[0].status.readyReplicas | default(0)
+    ) == (
+      argocd_app_controller_sts.resources[0].status.replicas | default(0)
+    )
+
+###################################
+#################### ArgoCD APPS ##
+###################################
+
+- name: Ensure ArgoCD Apps values directory exists
+  ansible.builtin.file:
+    path: /tmp/argocdapps
+    state: directory
+    mode: "0755"
+
+- name: Render ArgoCD values file
+  ansible.builtin.template:
+    src: values-apps.yaml.j2
+    dest: /tmp/argocdapps/values-apps.yaml
+    mode: "0644"
+
+- name: Install or upgrade ArgoCD Apps
+  kubernetes.core.helm:
+    name: argocdapps
+    chart_ref: argo/argocd-apps
+    chart_version: "{{ argocd_apps_version }}"
+    release_namespace: argocd
+    create_namespace: true
+    values_files:
+      - /tmp/argocdapps/values-apps.yaml
+    state: present
+
+##################################
+##################################
+- name: Include apps tasks
+  import_tasks: apps.yaml

@@ -18,3 +18,11 @@ keycloak_proxy_address_forwarding: true
 keycloak_jdbc_params: connectTimeout=21600
 keycloak_login_listener_api_service_host: http://de-register-api-service
 keycloak_login_listener_client_ids: de-prod
+
+keycloak_resources:
+  requests:
+    cpu: 100m
+    memory: 512Mi
+  limits:
+    cpu: 500m
+    memory: 1Gi

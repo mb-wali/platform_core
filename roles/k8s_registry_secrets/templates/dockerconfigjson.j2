@@ -1,0 +1,7 @@
+{
+  "auths": {
+    "{{ registry_secret.registry_url }}": {
+      "auth": "{{ (registry_secret.username + ':' + registry_secret.password) | b64encode }}"
+    }
+  }
+}

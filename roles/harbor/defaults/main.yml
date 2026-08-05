@@ -1,0 +1,15 @@
+harbor_helm_version: 1.18.2
+harbor_namespace: harbor
+harbor_hostname: harbor.example.com
+harbor_registry_size: 10Gi
+harbor_trivy_size: 5Gi
+harbor_admin_pass: Harbor12345
+
+# OIDC
+## https://goharbor.io/docs/2.12.0/install-config/configure-system-settings-cli/
+harbor_oidc_endpoint: https://keycloak.example.com/auth
+harbor_oidc_client: rdm
+harbor_oidc_client_secret: <CLIENT_SECRET>
+harbor_oidc_group_claim: groups
+harbor_oidc_admin_group: admin
+harbor_database_type: internal # or external

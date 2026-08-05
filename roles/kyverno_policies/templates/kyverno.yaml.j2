@@ -40,6 +40,7 @@ features:
   # Example: you can allow this setting to exempt the "elabftw" Deployment from runAsNonRoot restrictions without disabling the policy for the entire cluster.
   # here we will allow to writ the policy only for elabftw namespace - you can also use wildcard * for all
   # see e.g of a policyException : roles/helm_kyverno/templates/policyException-eg.yaml
+  # kubectl apply -f policyException-eg.yaml
   # More: https://kyverno.io/docs/guides/exceptions/
   policyExceptions:
     enabled: {{ kyverno_policyExceptions }}

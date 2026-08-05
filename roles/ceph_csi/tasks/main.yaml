@@ -1,0 +1,82 @@
+---
+- name: Ensure Ceph CSI values directory exists
+  ansible.builtin.file:
+    path: /tmp/ceph-csi
+    state: directory
+    mode: "0755"
+
+- name: Render Ceph CSI RBD values file
+  ansible.builtin.template:
+    src: values-rbd.yaml.j2
+    dest: /tmp/ceph-csi/values-rbd.yaml
+    mode: "0644"
+
+- name: Add Ceph CSI Helm repo
+  kubernetes.core.helm_repository:
+    name: ceph-csi
+    repo_url: https://ceph.github.io/csi-charts
+
+- name: Install or upgrade Ceph CSI RBD
+  kubernetes.core.helm:
+    name: ceph-csi-rbd
+    chart_ref: ceph-csi/ceph-csi-rbd
+    chart_version: "{{ ceph_csi_helm_version }}"
+    release_namespace: ceph-csi-rbd
+    create_namespace: true
+    values_files:
+      - /tmp/ceph-csi/values-rbd.yaml
+    state: present
+
+- name: Wait for ceph-csi-rbd-nodeplugin DaemonSet to be ready
+  kubernetes.core.k8s_info:
+    api_version: apps/v1
+    kind: DaemonSet
+    namespace: ceph-csi-rbd
+    name: ceph-csi-rbd-nodeplugin
+  register: ceph_csi_rbd_nodeplugin_ds
+  retries: 30
+  delay: 10
+  until: >
+    ceph_csi_rbd_nodeplugin_ds.resources | length > 0 and
+    (
+      ceph_csi_rbd_nodeplugin_ds.resources[0].status.numberReady | default(0)
+    ) == (
+      ceph_csi_rbd_nodeplugin_ds.resources[0].status.desiredNumberScheduled | default(0)
+    )
+
+#############
+### FS
+#############
+- name: Render Ceph CSI RBD values file
+  ansible.builtin.template:
+    src: values-fs.yaml.j2
+    dest: /tmp/ceph-csi/values-fs.yaml
+    mode: "0644"
+
+- name: Install or upgrade Ceph CSI FS
+  kubernetes.core.helm:
+    name: ceph-csi-cephfs
+    chart_ref: ceph-csi/ceph-csi-cephfs
+    chart_version: "{{ ceph_csi_helm_version }}"
+    release_namespace: ceph-csi-cephfs
+    create_namespace: true
+    values_files:
+      - /tmp/ceph-csi/values-fs.yaml
+    state: present
+
+- name: Wait for ceph-csi-cephfs-nodeplugin DaemonSet to be ready
+  kubernetes.core.k8s_info:
+    api_version: apps/v1
+    kind: DaemonSet
+    namespace: ceph-csi-cephfs
+    name: ceph-csi-cephfs-nodeplugin
+  register: ceph_csi_cephfs_nodeplugin_ds
+  retries: 30
+  delay: 10
+  until: >
+    ceph_csi_cephfs_nodeplugin_ds.resources | length > 0 and
+    (
+      ceph_csi_cephfs_nodeplugin_ds.resources[0].status.numberReady | default(0)
+    ) == (
+      ceph_csi_cephfs_nodeplugin_ds.resources[0].status.desiredNumberScheduled | default(0)
+    )

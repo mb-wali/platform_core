@@ -1,0 +1,17 @@
+---
+k8s_registry_secrets: []
+# k8s_registry_secrets:
+#   - name: gitlab-registry
+#     registry_url: registry.gitlab.com
+#     username: gitlab-ci-token
+#     password: "" # gitlab_token
+#     namespaces:
+#       - app-dev
+#       - app-prod
+
+#   - name: harbor-registry
+#     registry_url: harbor.example.com
+#     username: robot$myproject
+#     password: "" # harbor_robot_secret
+#     namespaces:
+#       - app-dev
