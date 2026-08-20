@@ -9,6 +9,14 @@ podSecurityStandard: {{ kyverno_podSecurityStandard }}
 # For more info https://kyverno.io/docs/policy-types/cluster-policy/validate.
 validationFailureAction: {{ kyverno_validationFailureAction }}
 
+
+# -- Policy engine type (`ClusterPolicy`, `ValidatingPolicy`)
+# `ValidatingPolicy` installs CEL-based policies (policies.kyverno.io, requires Kyverno 1.17+).
+# Set to `ClusterPolicy` to keep installing the legacy kyverno.io policy types,
+# which are deprecated and will be removed in a future release
+# (see https://kyverno.io/docs/guides/migration-to-cel/).
+policyType: ClusterPolicy
+
 # TODO: try disabling this and see what is not working...
 validationFailureActionOverrides:
   all:
