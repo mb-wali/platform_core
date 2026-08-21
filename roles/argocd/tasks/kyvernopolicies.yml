@@ -1,12 +1,16 @@
+# for more ready policies:
+# https://github.com/kyverno/policies/tree/main
 
-# for more ready policies: https://github.com/kyverno/policies/tree/main
+# ---------------------------------------------------------------------------
+# Prevent default project in Argo CD Applications
+# ---------------------------------------------------------------------------
 
-- name: Apply Kyverno ClusterPolicy to prevent default project in Argo CD Applications
+- name: Apply Kyverno ValidatingPolicy to prevent default project in Argo CD Applications
   kubernetes.core.k8s:
     state: present
     definition:
-      apiVersion: kyverno.io/v1
-      kind: ClusterPolicy
+      apiVersion: policies.kyverno.io/v1
+      kind: ValidatingPolicy
       metadata:
         name: application-prevent-default-project
         annotations:
@@ -16,107 +20,27 @@
           policies.kyverno.io/subject: Application
           policies.kyverno.io/description: >
             This policy prevents the use of the default project in an Argo CD Application.
-      spec:
-        validationFailureAction: Enforce
-        background: true
-        rules:
-          - name: disallow-default-project
-            match:
-              any:
-                - resources:
-                    kinds:
-                      - Application
-            preconditions:
-              all:
-                - key: "request.operation || 'BACKGROUND'"
-                  operator: NotEquals
-                  value:
-                    - CREATE
-                    - UPDATE
-            validate:
-              message: "The default project may not be used in an Argo CD Application."
-              pattern:
-                spec:
-                  project: "!default"
-
-- name: Apply Kyverno ClusterPolicy to restrict Argo CD targetRevision branches
-  kubernetes.core.k8s:
-    state: present
-    definition:
-      apiVersion: kyverno.io/v1
-      kind: ClusterPolicy
-      metadata:
-        name: application-restrict-target-revision
-        annotations:
-          policies.kyverno.io/title: Restrict Argo CD targetRevision
-          policies.kyverno.io/category: Argo
-          policies.kyverno.io/severity: high
-          policies.kyverno.io/subject: Application
-          policies.kyverno.io/description: >
-            This policy restricts Argo CD Applications to approved
-            targetRevision values only.
-      spec:
-        validationFailureAction: Enforce
-        background: true
-
-        rules:
-          - name: restrict-target-revision
-            match:
-              any:
-                - resources:
-                    kinds:
-                      - Application
-            validate:
-              message: "Only main, HEAD, or version tags like v1.2.3 are allowed"
-              pattern:
-                spec:
-                  source:
-                    targetRevision: "main|HEAD|v[0-9]+\\.[0-9]+\\.[0-9]+"
-  when: argocd_target_revision_policy | bool
-
-# This works only for specified branches
-# main/HEAD for now
-- name: Apply Kyverno ClusterPolicy to restrict AVP Helm branch
-  kubernetes.core.k8s:
-    state: present
-    definition:
-      apiVersion: kyverno.io/v1
-      kind: ClusterPolicy
-      metadata:
-        name: application-restrict-avp-helm-values-branch
 
       spec:
-        validationFailureAction: Enforce
-        background: true
+        validationActions:
+          - Deny
 
-        rules:
-          - name: restrict-helm-values-branch
-            match:
-              any:
-                - resources:
-                    kinds:
-                      - Application
+        evaluation:
+          background:
+            enabled: true
 
-            validate:
-              message: >
-                Only main, HEAD, or semantic version tags (vX.Y.Z)
-                are allowed for HELM_VALUES_BRANCH.
+        matchConstraints:
+          resourceRules:
+            - apiGroups:
+                - argoproj.io
+              apiVersions:
+                - v1alpha1
+              operations:
+                - CREATE
+                - UPDATE
+              resources:
+                - applications
 
-              foreach:
-                - list: "request.object.spec.source.plugin.env[]"
-
-                  preconditions:
-                    all:
-                      - key: "{{ '{{ element.name }}' }}"
-                        operator: Equals
-                        value: HELM_VALUES_BRANCH
-
-                  deny:
-                    conditions:
-                      any:
-                        - key: "{{ '{{ element.value }}' }}"
-                          operator: AnyNotIn
-                          value:
-                            - main
-                            - HEAD
-  when: argocd_target_revision_policy | bool
+        validations:
+          - expression: "object.spec.project != 'default'"
+            message: "The default project may not be used in an Argo CD Application."

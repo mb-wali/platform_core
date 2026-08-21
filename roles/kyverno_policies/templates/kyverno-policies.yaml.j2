@@ -9,58 +9,102 @@ podSecurityStandard: {{ kyverno_podSecurityStandard }}
 # For more info https://kyverno.io/docs/policy-types/cluster-policy/validate.
 validationFailureAction: {{ kyverno_validationFailureAction }}
 
-
 # -- Policy engine type (`ClusterPolicy`, `ValidatingPolicy`)
-# `ValidatingPolicy` installs CEL-based policies (policies.kyverno.io, requires Kyverno 1.17+).
-# Set to `ClusterPolicy` to keep installing the legacy kyverno.io policy types,
-# which are deprecated and will be removed in a future release
-# (see https://kyverno.io/docs/guides/migration-to-cel/).
-policyType: ClusterPolicy
+#
+# `ValidatingPolicy` installs CEL-based policies using the
+# policies.kyverno.io API.
+#
+# `ClusterPolicy` is the legacy kyverno.io policy type.
+policyType: ValidatingPolicy
 
-# TODO: try disabling this and see what is not working...
-validationFailureActionOverrides:
-  all:
-    - action: audit
-      namespaceSelector:
-        matchLabels:
-          policy.kyverno.io/audit: "true"
-    - action: audit
-      namespaces:
-        - kube-system
-        - cert-manager
-        - nfs-provisioner
-        - ceph-csi-rbd
-        - ceph-csi-cephfs
-        - monitoring # kube-prometheus-stack
-        - cattle-system # rancher
-        - cattle-fleet-system # rancher
-        - cattle-capi-system # rancher
-        - cattle-impersonation-system # rancher
-        - cattle-local-user-passwords # rancher
-        - cattle-turtles-system # rancher
-        - cattle-ui-plugin-system # rancher
-        - cattle-global-data # rancher
-        - fleet-local # rancher
-        - fleet-default # rancher
-        - cattle-fleet-clusters-system # rancher
-        - cattle-fleet-local-system # rancher
-        
-  disallow-capabilities-strict:
-    - action: audit
-      namespaces:
-        - vault
-        - argocd
-  restrict-seccomp-strict:
-    - action: audit
-      namespaces:
-        - vault
-        - argocd
-        - gitlab-runner
-  disallow-privilege-escalation:
-    - action: audit
-      namespaces:
-        - argocd
-  require-run-as-nonroot:
-    - action: audit
-      namespaces:
-        - argocd
+
+# ---------------------------------------------------------------------------
+# Global ValidatingPolicy exclusions
+# ---------------------------------------------------------------------------
+#
+# These namespaces completely ignore ALL ValidatingPolicy policies.
+#
+vpolExclude:
+  excludeNamespaces:
+    - kube-system
+    - cert-manager
+    - nfs-provisioner
+    - ceph-csi-rbd
+    - ceph-csi-cephfs
+    - monitoring # kube-prometheus-stack
+
+    # Rancher
+    - cattle-system
+    - cattle-fleet-system
+    - cattle-capi-system
+    - cattle-impersonation-system
+    - cattle-local-user-passwords
+    - cattle-turtles-system
+    - cattle-ui-plugin-system
+    - cattle-global-data
+    - fleet-local
+    - fleet-default
+    - cattle-fleet-clusters-system
+    - cattle-fleet-local-system
+
+    # Other namespaces
+    - argocd
+    - vault
+
+
+# ---------------------------------------------------------------------------
+# Per-policy ValidatingPolicy exclusions
+# ---------------------------------------------------------------------------
+#
+# Optional.
+#
+# Use this when a namespace should ignore ONLY specific policies instead of
+# all ValidatingPolicy policies.
+#
+# NOTE:
+# `vpolExcludeByPolicy` overrides the global `vpolExclude` configuration
+# for the specified policy. It does NOT simply add to the global list.
+#
+# Therefore, when using it, the global exclusions need to be included again
+# for that policy if they should remain excluded.
+#
+# Example:
+#
+# vpolExcludeByPolicy:
+#   disallow-capabilities-strict:
+#     excludeNamespaces:
+#       - kube-system
+#       - cert-manager
+#       - argocd
+#
+#   restrict-seccomp-strict:
+#     excludeNamespaces:
+#       - kube-system
+#       - cert-manager
+#       - argocd
+#       - gitlab-runner
+#
+# Currently disabled because `argocd` and `vault` are globally excluded
+# above and therefore already ignore all policies.
+#
+# vpolExcludeByPolicy:
+#   disallow-capabilities-strict:
+#     excludeNamespaces:
+#       # Add global exclusions here as needed.
+#       # - kube-system
+#       # - cert-manager
+#
+#       # Policy-specific exclusions:
+#       # - argocd
+#       # - vault
+#
+#   restrict-seccomp-strict:
+#     excludeNamespaces:
+#       # Add global exclusions here as needed.
+#       # - kube-system
+#       # - cert-manager
+#
+#       # Policy-specific exclusions:
+#       # - argocd
+#       # - vault
+#       # - gitlab-runner

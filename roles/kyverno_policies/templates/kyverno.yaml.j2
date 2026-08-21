@@ -1,10 +1,14 @@
 # https://github.com/kyverno/kyverno/tree/main/charts
+# https://github.com/kyverno/kyverno/blob/main/charts/kyverno/values.yaml
 
-## https://github.com/kyverno/kyverno/blob/main/charts/kyverno/values.yaml
 
-
-# permissions to check argocd applications
-# so that the policy: kyverno-prevent-default-project.yaml  - works
+# ---------------------------------------------------------------------------
+# Reports controller
+# ---------------------------------------------------------------------------
+#
+# Permissions to check Argo CD Applications so that the custom
+# ValidatingPolicy for Argo CD Applications can generate reports.
+#
 reportsController:
   rbac:
     clusterRole:
@@ -19,29 +23,62 @@ reportsController:
             - watch
 
 
+# ---------------------------------------------------------------------------
+# Admission controller
+# ---------------------------------------------------------------------------
+
 admissionController:
   autoscaling:
     # -- Enable horizontal pod autoscaling
     enabled: {{ kyverno_autoscaling }}
 
+
+# ---------------------------------------------------------------------------
+# Kyverno features
+# ---------------------------------------------------------------------------
+
 features:
+
   omitEvents:
-    # -- Events which should not be emitted (possible values `PolicyViolation`, `PolicyApplied`, `PolicyError`, and `PolicySkipped`)
+    # -- Events which should not be emitted
+    # Possible values:
+    #   PolicyViolation
+    #   PolicyApplied
+    #   PolicyError
+    #   PolicySkipped
     eventTypes:
       - PolicyApplied
       - PolicySkipped
       - PolicyViolation
       # - PolicyError
 
-  # Enables Kyverno PolicyException support, allowing selected policies to be bypassed for specific workloads in a controlled way.
-  # In this case, exceptions can only be created/used within the "elabftw" namespace, preventing cluster-wide policy bypasses.
-  # This is useful for edge cases where a workload (like legacy apps or strict containers) cannot fully comply with global policies.
-  # Instead of weakening policies globally, you can create a PolicyException resource that targets a specific Deployment, rule, or policy.
-  # Example: you can allow this setting to exempt the "elabftw" Deployment from runAsNonRoot restrictions without disabling the policy for the entire cluster.
-  # here we will allow to writ the policy only for elabftw namespace - you can also use wildcard * for all
-  # see e.g of a policyException : roles/helm_kyverno/templates/policyException-eg.yaml
-  # kubectl apply -f policyException-eg.yaml
-  # More: https://kyverno.io/docs/guides/exceptions/
+
+  # -------------------------------------------------------------------------
+  # PolicyExceptions
+  # -------------------------------------------------------------------------
+  #
+  # Enables PolicyException support.
+  #
+  # PolicyExceptions are restricted to the configured namespace so that
+  # workloads cannot create cluster-wide policy bypasses.
+  #
+  # For example, the elabftw namespace can create/use an exception such as:
+  #
+  #   apiVersion: policies.kyverno.io/v1
+  #   kind: PolicyException
+  #
+  #   spec:
+  #     policyRefs:
+  #       - name: require-run-as-nonroot
+  #         kind: ValidatingPolicy
+  #
+  #     matchConditions:
+  #       - name: elabftw-namespace
+  #         expression: "object.metadata.namespace == 'elabftw'"
+  #
+  # More information:
+  # https://kyverno.io/docs/guides/exceptions/
+  #
   policyExceptions:
     enabled: {{ kyverno_policyExceptions }}
     namespace: '{{ kyverno_policyExceptions_ns }}'
