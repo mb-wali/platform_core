@@ -1,6 +1,6 @@
 grafana_helm_version: 81.5.1
 grafana_namespace: monitoring
-grafana_domain_url : grafana.example.com
+grafana_domain_url: grafana.example.com
 
 grafana_oauth_realm_url: https://keycloak.example.com/auth/realms/test
 grafana_oauth_client_secret: <client-secret>

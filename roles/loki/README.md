@@ -32,7 +32,7 @@ grafana_loki_datasource_enabled: true
 ### Option 2: Via Grafana UI
 
 1. Go to: Grafana Datasources
-2. Click “Add data source”.
+2. Click "Add data source".
 3. Select Loki as the type.
 4. Enter the URL: `http://loki-gateway.monitoring.svc:80`
 5. Save and test the connection.
@@ -52,5 +52,5 @@ kubectl logs -n monitoring -l app.kubernetes.io/name=loki --tail=200 | grep -iE 
 # make sure you have created these buckets in s3
 
 <div style="text-align: center;">
-<img src="./buckets.png" alt="oidc" width="800"/>
+<img src="./docs/images/buckets.png" alt="oidc" width="800"/>
 </div>

@@ -125,7 +125,5 @@ data:
             argocd-vault-plugin generate -
 
       lockRepo: false
----
-
 
 # https://pygithub.readthedocs.io/en/stable/examples/Authentication.html#app-authentication

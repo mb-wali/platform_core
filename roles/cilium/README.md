@@ -1,6 +1,6 @@
 # Cilium Policy Layers
 
-Cilium’s policies can filter traffic at three key (**L3/L4/L7**) layers of the OSI networking model 
+Cilium's policies can filter traffic at three key (**L3/L4/L7**) layers of the OSI networking model 
 
 | Layer | Name | Example in Cilium | What it controls |
 |-------|------|-------------------|------------------|
