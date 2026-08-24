@@ -15,3 +15,9 @@ kyverno_reporter: false
 kyverno_reporter_ingress_enabled: false
 kyverno_reporter_ingress_class: nginx
 kyverno_reporter_ingress_host: kyverno-report.domain.com
+
+# Namespaces excluded from Kyverno policies. Set to [] to disable exclusions.
+kyverno_policy_excludeNamespaces: []
+# kyverno_policy_excludeNamespaces:
+#   - kube-system
+#   - cert-manager
