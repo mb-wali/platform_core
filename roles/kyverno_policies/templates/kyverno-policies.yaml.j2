@@ -24,33 +24,13 @@ policyType: ValidatingPolicy
 #
 # These namespaces completely ignore ALL ValidatingPolicy policies.
 #
+{% if kyverno_policy_excludeNamespaces %}
 vpolExclude:
   excludeNamespaces:
-    - kube-system
-    - cert-manager
-    - nfs-provisioner
-    - ceph-csi-rbd
-    - ceph-csi-cephfs
-    - monitoring # kube-prometheus-stack
-
-    # Rancher
-    - cattle-system
-    - cattle-fleet-system
-    - cattle-capi-system
-    - cattle-impersonation-system
-    - cattle-local-user-passwords
-    - cattle-turtles-system
-    - cattle-ui-plugin-system
-    - cattle-global-data
-    - fleet-local
-    - fleet-default
-    - cattle-fleet-clusters-system
-    - cattle-fleet-local-system
-
-    # Other namespaces
-    - argocd
-    - vault
-
+{% for namespace in kyverno_policy_excludeNamespaces %}
+    - {{ namespace }}
+{% endfor %}
+{% endif %}
 
 # ---------------------------------------------------------------------------
 # Per-policy ValidatingPolicy exclusions
