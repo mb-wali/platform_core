@@ -13,3 +13,4 @@ grafana_smtp_host: smtp-client.smtpclient.svc.cluster.local:25
 prometheus_ingress_enable: false
 prometheus_domain_url: prometheus.example.com
 prometheus_remote_write: false
+grafana_upgrade_always: false
