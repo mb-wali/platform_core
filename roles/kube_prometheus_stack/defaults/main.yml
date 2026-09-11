@@ -10,7 +10,9 @@ grafana_oauth_allowed_groups: monitoring-users,platform-admins,developers
 grafana_smtp_enable: true
 grafana_smtp_host: smtp-client.smtpclient.svc.cluster.local:25
 
+grafana_upgrade_always: false
+
 prometheus_ingress_enable: false
 prometheus_domain_url: prometheus.example.com
 prometheus_remote_write: false
-grafana_upgrade_always: false
+
