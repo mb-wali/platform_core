@@ -7,7 +7,7 @@ cephClusterSpec:
 
   # enable the ceph dashboard for viewing cluster status
   dashboard:
-    enabled: false
+    enabled: {{ ceph_ingress_enabled | lower }}
     ssl: false
 
   # storage configuration
@@ -27,10 +27,10 @@ cephClusterSpec:
 
 # -- Enable an ingress for the ceph-dashboard
 ingress:
-  dashboard: {}
-#   dashboard:
-#     host:
-#       name: ceph.k3s.tugraz.at
-#       path: "/"
-#       pathType: Prefix
-#     ingressClassName: contour
+#  dashboard: {}
+  dashboard:
+    host:
+      name: {{ ceph_dashboard_hostname }}
+      path: "/"
+      pathType: Prefix
+    ingressClassName: contour
