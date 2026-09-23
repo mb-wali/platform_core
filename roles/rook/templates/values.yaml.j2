@@ -1,0 +1,43 @@
+# operator: https://github.com/rook/rook/blob/master/deploy/charts/rook-ceph/values.yaml
+# csi driver: https://github.com/rook/rook/blob/master/deploy/charts/ceph-csi-drivers/values.yaml
+# rook cluster: https://github.com/rook/rook/blob/master/deploy/charts/rook-ceph-cluster/values.yaml
+
+
+cephClusterSpec:
+
+  # enable the ceph dashboard for viewing cluster status
+  dashboard:
+    enabled: false
+    ssl: false
+
+  # storage configuration
+  storage:
+    useAllNodes: false
+    useAllDevices: false
+
+    nodes:
+      - name: "cy-condor01"
+        devices:
+          - name: "sdb"
+
+      - name: "cy-agent01-k3s"
+        devices:
+          - name: "sdb"
+
+      - name: "cy-agent02-k3s"
+        devices:
+          - name: "sdb"
+
+      - name: "cy-k8w03"
+        devices:
+          - name: "sdd"
+
+# -- Enable an ingress for the ceph-dashboard
+ingress:
+  dashboard: {}
+#   dashboard:
+#     host:
+#       name: ceph.k3s.tugraz.at
+#       path: "/"
+#       pathType: Prefix
+#     ingressClassName: contour
