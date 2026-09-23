@@ -9,7 +9,7 @@ cephClusterSpec:
   dashboard:
     enabled: {{ ceph_ingress_enabled | lower }}
     ssl: false
-    prometheusEndpoint: http://kube-prometheus-stack-prometheus.monitoring.svc:9090
+    prometheusEndpoint: {{ dashboard_prometheusEndpoint }}
     prometheusEndpointSSLVerify: false
 
 
