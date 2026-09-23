@@ -16,21 +16,14 @@ cephClusterSpec:
     useAllDevices: false
 
     nodes:
-      - name: "cy-condor01"
-        devices:
-          - name: "sdb"
 
-      - name: "cy-agent01-k3s"
+{% for node in ceph_storage_nodes %}
+      - name: "{{ node.name }}"
         devices:
-          - name: "sdb"
-
-      - name: "cy-agent02-k3s"
-        devices:
-          - name: "sdb"
-
-      - name: "cy-k8w03"
-        devices:
-          - name: "sdd"
+{% for device in node.devices %}
+          - name: "{{ device.name }}"
+{% endfor %}
+{% endfor %}
 
 # -- Enable an ingress for the ceph-dashboard
 ingress:

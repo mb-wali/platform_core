@@ -66,27 +66,27 @@
       - /tmp/rook/ceph-csi-values.yaml
     state: present
 
-# Wait for Ceph CSI pods to be ready
-- name: Wait for Ceph CSI pods to be ready
-  kubernetes.core.k8s_info:
-    api_version: v1
-    kind: Pod
-    namespace: rook-ceph
-    label_selectors:
-      - app.kubernetes.io/part-of=ceph-csi
-  register: ceph_csi_pods
-  retries: 30
-  delay: 10
-  until: >
-    ceph_csi_pods.resources | length > 0 and
-    (
-      ceph_csi_pods.resources
-      | selectattr('status.phase', 'equalto', 'Running')
-      | list
-      | length
-    ) == (
-      ceph_csi_pods.resources | length
-    )
+# # Wait for Ceph CSI pods to be ready
+# - name: Wait for Ceph CSI pods to be ready
+#   kubernetes.core.k8s_info:
+#     api_version: v1
+#     kind: Pod
+#     namespace: rook-ceph
+#     label_selectors:
+#       - app.kubernetes.io/part-of=ceph-csi
+#   register: ceph_csi_pods
+#   retries: 30
+#   delay: 10
+#   until: >
+#     ceph_csi_pods.resources | length > 0 and
+#     (
+#       ceph_csi_pods.resources
+#       | selectattr('status.phase', 'equalto', 'Running')
+#       | list
+#       | length
+#     ) == (
+#       ceph_csi_pods.resources | length
+#     )
 
 # Creates the CephCluster CR that the Rook operator will configure.
 - name: Install or upgrade rook-ceph-cluster
