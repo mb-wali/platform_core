@@ -9,6 +9,9 @@ cephClusterSpec:
   dashboard:
     enabled: {{ ceph_ingress_enabled | lower }}
     ssl: false
+    prometheusEndpoint: http://kube-prometheus-stack-prometheus.monitoring.svc:9090
+    prometheusEndpointSSLVerify: false
+
 
   # storage configuration
   storage:
