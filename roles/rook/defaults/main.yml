@@ -1,6 +1,7 @@
 rook_csi_driver_helm_version: 1.0.5
 rook_helm_version: v1.20.7
 ceph_ingress_enabled: false
+ceph_dashboard_hostname: ceph-dashboard.example.com
 
 # nodes and its disks device names
 ceph_storage_nodes: {}

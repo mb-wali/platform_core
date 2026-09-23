@@ -1,83 +1,45 @@
-# Grafana Alloy
+# Rook
 
-## Links
-* [Offical Docs](https://grafana.com/docs/alloy/latest/)
-* [Tutorial](https://www.youtube.com/watch?v=E654LPrkCjo)
-* [Docs on Tutorial](https://github.com/christianlempa/boilerplates)
+Ceph cluster running on Kubernetes.
+
 ---
 
-## Installation
-You can [install](https://grafana.com/docs/alloy/latest/set-up/install/) it via multiple ways.
+## Prerequisites
 
-* Helm Chart: https://github.com/grafana/alloy/tree/main/operations/helm/charts/alloy
+Each Kubernetes node participating in the Ceph cluster must have an additional dedicated disk available for Ceph storage.
 
+### Disk Requirements
 
-## kubernetes basic rules for logs
+For each Ceph storage disk:
 
-```yaml
-alloy:
-  configMap:
-    content: |
-      logging {
-          level  = "info"
-          format = "logfmt"
-      }
+- **Minimum capacity:** 100 GB (for now)
+- **Storage type:** SSD-backed storage; **NVMe preferred**
+- **Dedicated disk:** The disk must be a separate block device and must not be part of the OS disk
+- **Raw disk:** The disk must **not** be partitioned, formatted, or mounted
+- **No existing data:** The disk must be empty and contain no data that needs to be preserved
+- **Available to Rook:** The entire raw block device must be available for Rook/Ceph to use
 
-      discovery.kubernetes "pods" {
-          role = "pod"
-      }
+### Example
 
-      discovery.relabel "pods" {
-        targets = discovery.kubernetes.pods.targets
-        rule {
-          source_labels = ["__meta_kubernetes_namespace"]
-          target_label  = "namespace"
-        }
-        rule {
-          source_labels = ["__meta_kubernetes_pod_name"]
-          target_label  = "pod"
-        }
-        rule {
-          source_labels = ["__meta_kubernetes_pod_container_name"]
-          target_label  = "container"
-        }
-        rule {
-          source_labels = ["__meta_kubernetes_node_name"]
-          target_label  = "node"
-        }
-      }
+The node should have a layout similar to:
 
-      loki.source.kubernetes "pods" {
-        targets    = discovery.relabel.pods.output
-        forward_to = [loki.write.default.receiver]
-      }
-
-      loki.write "default" {
-          endpoint {
-              url = "http://loki-gateway/loki/api/v1/push"
-          }
-      }
+```text
+/dev/sda    → OS disk
+/dev/sdb    → Dedicated Ceph disk (100 GB+, SSD/NVMe)
 ```
 
-# What else can Alloy do?
-* **Metrics:** Alloy can scrape Prometheus-style metrics from pods, nodes, or endpoints. Can forward metrics to: Prometheus remote write endpoints. e.g. `nginx_requests_total{method="POST",status="500"} 3`
-* **Traces:** Alloy can collect OpenTelemetry traces from applications.
-  ```bash
-  #  Can enrich traces with metadata from Kubernetes pods (namespace, pod, node, labels).
-  # e.g.
-  TraceID: abc123
-  Span 1: HTTP GET /login  (frontend pod)
-  Span 2: DB query SELECT … (backend pod)
-  Span 3: Token validation    (backend pod)
-  ```
-* **Custom Enrichment & Observability Pipelines:**
+---
 
-  Custom enrichment and observability pipelines let Alloy turn raw logs/metrics/traces into structured, labeled, queryable observability data while keeping everything in a single agent.
+## Ceph Dashboard Access
 
-## What OpenTelemetry Traces Are
-* Modern applications are often made of multiple services/microservices.
-* A single user request may touch many services (e.g., API → backend → database → cache).
-* Distributed tracing tracks the path of that request across all these services.
+The Rook-Ceph dashboard uses the following default credentials:
 
-## Extra documentation
-* Components: https://grafana.com/docs/alloy/latest/introduction/how-alloy-works/#component-based-architecture
+- **Username:** `admin`
+- **Password:** Stored in the Kubernetes Secret `rook-ceph-dashboard-password`
+
+Retrieve the dashboard password with:
+
+```bash
+kubectl -n rook-ceph get secret rook-ceph-dashboard-password \
+  -o jsonpath="{['data']['password']}" | base64 --decode
+```
