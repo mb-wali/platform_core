@@ -61,6 +61,7 @@ cephBlockPools:
 
 # Ceph FS
 cephFileSystems:
+  - name: ceph-filesystem
     storageClass:
       reclaimPolicy: {{ ceph_rbd_storageclass_reclaimPolicy }}
 
