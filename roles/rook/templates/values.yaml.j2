@@ -5,6 +5,76 @@
 
 cephClusterSpec:
 
+  # Resources
+  resources:
+    mgr:
+      limits:
+        memory: "1Gi"
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+
+    mon:
+      limits:
+        memory: "2Gi"
+      requests:
+        cpu: "500m"
+        memory: "512Mi"
+
+    osd:
+      limits:
+        memory: "4Gi"
+      requests:
+        cpu: "500m"
+        memory: "2Gi"
+
+    prepareosd:
+      requests:
+        cpu: "250m"
+        memory: "50Mi"
+
+    mgr-sidecar:
+      limits:
+        memory: "100Mi"
+      requests:
+        cpu: "50m"
+        memory: "40Mi"
+
+    crashcollector:
+      limits:
+        memory: "60Mi"
+      requests:
+        cpu: "50m"
+        memory: "60Mi"
+
+    exporter:
+      limits:
+        memory: "128Mi"
+      requests:
+        cpu: "50m"
+        memory: "50Mi"
+
+    cmd-reporter:
+      limits:
+        memory: "1Gi"
+      requests:
+        cpu: "250m"
+        memory: "100Mi"
+
+    logcollector:
+      limits:
+        memory: "1Gi"
+      requests:
+        cpu: "50m"
+        memory: "100Mi"
+
+    cleanup:
+      limits:
+        memory: "1Gi"
+      requests:
+        cpu: "250m"
+        memory: "100Mi"
+
   # Configure the healthcheck and liveness probes for ceph pods.
   healthCheck:
     muteHealthWarning:
@@ -105,10 +175,10 @@ cephFileSystems:
         activeStandby: true
         resources:
           limits:
-            memory: "4Gi"
+            memory: "2Gi"
           requests:
-            cpu: "1000m"
-            memory: "4Gi"
+            cpu: "250m"
+            memory: "1Gi"
         priorityClassName: system-cluster-critical
     storageClass:
       enabled: true
