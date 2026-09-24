@@ -3,6 +3,9 @@ rook_helm_version: v1.20.7
 ceph_ingress_enabled: false
 ceph_dashboard_hostname: ceph-dashboard.example.com
 dashboard_prometheusEndpoint: http://kube-prometheus-stack-prometheus.monitoring.svc:9090
+ceph_fs_storageclass_reclaimPolicy: Delete
+ceph_rbd_storageclass_reclaimPolicy: Delete
+ceph_object_storageclass_reclaimPolicy: Delete
 
 # nodes and its disks device names
 ceph_storage_nodes: {}
