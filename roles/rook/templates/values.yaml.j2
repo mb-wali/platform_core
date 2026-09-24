@@ -57,13 +57,13 @@ cephBlockPools:
   - name: ceph-blockpool
     storageClass:
       isDefault: true
-      reclaimPolicy: {{ ceph_fs_storageclass_reclaimPolicy }}
+      reclaimPolicy: {{ ceph_rbd_storageclass_reclaimPolicy }}
 
 # Ceph FS
 cephFileSystems:
   - name: ceph-filesystem
     storageClass:
-      reclaimPolicy: {{ ceph_rbd_storageclass_reclaimPolicy }}
+      reclaimPolicy: {{ ceph_fs_storageclass_reclaimPolicy }}
 
 # s3 alike
 cephObjectStores:
