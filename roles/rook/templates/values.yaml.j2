@@ -1,0 +1,203 @@
+# operator: https://github.com/rook/rook/blob/master/deploy/charts/rook-ceph/values.yaml
+# csi driver: https://github.com/rook/rook/blob/master/deploy/charts/ceph-csi-drivers/values.yaml
+# rook cluster: https://github.com/rook/rook/blob/master/deploy/charts/rook-ceph-cluster/values.yaml
+
+
+cephClusterSpec:
+
+  # Resources
+  resources:
+    mgr:
+      limits:
+        memory: "1Gi"
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+
+    mon:
+      limits:
+        memory: "2Gi"
+      requests:
+        cpu: "500m"
+        memory: "512Mi"
+
+    osd:
+      limits:
+        memory: "4Gi"
+      requests:
+        cpu: "500m"
+        memory: "2Gi"
+
+    prepareosd:
+      requests:
+        cpu: "250m"
+        memory: "50Mi"
+
+    mgr-sidecar:
+      limits:
+        memory: "100Mi"
+      requests:
+        cpu: "50m"
+        memory: "40Mi"
+
+    crashcollector:
+      limits:
+        memory: "60Mi"
+      requests:
+        cpu: "50m"
+        memory: "60Mi"
+
+    exporter:
+      limits:
+        memory: "128Mi"
+      requests:
+        cpu: "50m"
+        memory: "50Mi"
+
+    cmd-reporter:
+      limits:
+        memory: "1Gi"
+      requests:
+        cpu: "250m"
+        memory: "100Mi"
+
+    logcollector:
+      limits:
+        memory: "1Gi"
+      requests:
+        cpu: "50m"
+        memory: "100Mi"
+
+    cleanup:
+      limits:
+        memory: "1Gi"
+      requests:
+        cpu: "250m"
+        memory: "100Mi"
+
+  # Configure the healthcheck and liveness probes for ceph pods.
+  healthCheck:
+    muteHealthWarning:
+      AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE:
+        policy: mute
+      AUTH_INSECURE_CLIENT_KEY_TYPE:
+        policy: mute
+      AUTH_INSECURE_KEYS_ALLOWED:
+        policy: mute
+      AUTH_INSECURE_KEYS_CREATABLE:
+        policy: mute
+
+  # enable the ceph dashboard for viewing cluster status
+  dashboard:
+    enabled: {{ ceph_ingress_enabled | lower }}
+    ssl: false
+    prometheusEndpoint: {{ dashboard_prometheusEndpoint }}
+    prometheusEndpointSSLVerify: false
+
+
+  # storage configuration
+  storage:
+    useAllNodes: false
+    useAllDevices: false
+
+    nodes:
+
+{% for node in ceph_storage_nodes %}
+      - name: "{{ node.name }}"
+        devices:
+{% for device in node.devices %}
+          - name: "{{ device.name }}"
+{% endfor %}
+{% endfor %}
+
+# -- Enable an ingress for the ceph-dashboard
+ingress:
+#  dashboard: {}
+  dashboard:
+    host:
+      name: {{ ceph_dashboard_hostname }}
+      path: "/"
+      pathType: Prefix
+    ingressClassName: contour
+
+
+#######################
+# Ceph RBD
+cephBlockPools:
+  - name: ceph-blockpool
+    spec:
+      failureDomain: host
+      replicated:
+        size: 3
+    storageClass:
+      enabled: true
+      name: ceph-block
+      annotations: {}
+      labels: {}
+      isDefault: true
+      reclaimPolicy: {{ ceph_rbd_storageclass_reclaimPolicy }}
+      allowVolumeExpansion: true
+      volumeBindingMode: "Immediate"
+      mountOptions: []
+      allowedTopologies: []
+      parameters:
+        imageFormat: "2"
+        imageFeatures: layering
+        csi.storage.k8s.io/provisioner-secret-name: rook-csi-rbd-provisioner
+        csi.storage.k8s.io/provisioner-secret-namespace: "rook-ceph"
+        csi.storage.k8s.io/controller-expand-secret-name: rook-csi-rbd-provisioner
+        csi.storage.k8s.io/controller-expand-secret-namespace: "rook-ceph"
+        csi.storage.k8s.io/controller-publish-secret-name: rook-csi-rbd-provisioner
+        csi.storage.k8s.io/controller-publish-secret-namespace: "rook-ceph"
+        csi.storage.k8s.io/node-stage-secret-name: rook-csi-rbd-node
+        csi.storage.k8s.io/node-stage-secret-namespace: "rook-ceph"
+        csi.storage.k8s.io/controller-modify-secret-name: rook-csi-rbd-provisioner
+        csi.storage.k8s.io/controller-modify-secret-namespace: "rook-ceph"
+        csi.storage.k8s.io/node-publish-secret-name: rook-csi-rbd-node
+        csi.storage.k8s.io/node-publish-secret-namespace: "rook-ceph"
+        csi.storage.k8s.io/fstype: ext4
+
+
+# Ceph FS
+cephFileSystems:
+  - name: ceph-filesystem
+    spec:
+      metadataPool:
+        replicated:
+          size: 3
+      dataPools:
+        - failureDomain: host
+          replicated:
+            size: 3
+          name: data0
+      metadataServer:
+        activeCount: 1
+        activeStandby: true
+        resources:
+          limits:
+            memory: "2Gi"
+          requests:
+            cpu: "250m"
+            memory: "1Gi"
+        priorityClassName: system-cluster-critical
+    storageClass:
+      enabled: true
+      isDefault: false
+      name: ceph-filesystem
+      pool: data0
+      reclaimPolicy: {{ ceph_fs_storageclass_reclaimPolicy }}
+      allowVolumeExpansion: true
+      volumeBindingMode: "Immediate"
+      annotations: {}
+      labels: {}
+      mountOptions: []
+      parameters:
+        csi.storage.k8s.io/provisioner-secret-name: rook-csi-cephfs-provisioner
+        csi.storage.k8s.io/provisioner-secret-namespace: "rook-ceph"
+        csi.storage.k8s.io/controller-expand-secret-name: rook-csi-cephfs-provisioner
+        csi.storage.k8s.io/controller-expand-secret-namespace: "rook-ceph"
+        csi.storage.k8s.io/controller-publish-secret-name: rook-csi-cephfs-provisioner
+        csi.storage.k8s.io/controller-publish-secret-namespace: "rook-ceph"
+        csi.storage.k8s.io/node-stage-secret-name: rook-csi-cephfs-node
+        csi.storage.k8s.io/node-stage-secret-namespace: "rook-ceph"
+        csi.storage.k8s.io/fstype: ext4

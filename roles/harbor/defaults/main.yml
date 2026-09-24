@@ -13,3 +13,5 @@ harbor_oidc_client_secret: <CLIENT_SECRET>
 harbor_oidc_group_claim: groups
 harbor_oidc_admin_group: admin
 harbor_database_type: internal # or external
+
+harbor_upgrade_always: false

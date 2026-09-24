@@ -20,7 +20,7 @@
   kubernetes.core.helm:
     name: harbor
     chart_ref: harbor/harbor
-    chart_version: "{{ harbor_helm_version }}"
+    chart_version: "{{ harbor_helm_version if not (harbor_upgrade_always | default(false) | bool) else omit }}"
     release_namespace: "{{ harbor_namespace }}"
     create_namespace: true
     values_files:
