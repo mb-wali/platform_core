@@ -5,6 +5,18 @@
 
 cephClusterSpec:
 
+  # Configure the healthcheck and liveness probes for ceph pods.
+  healthCheck:
+    muteHealthWarning:
+      AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE:
+        policy: mute
+      AUTH_INSECURE_CLIENT_KEY_TYPE:
+        policy: mute
+      AUTH_INSECURE_KEYS_ALLOWED:
+        policy: mute
+      AUTH_INSECURE_KEYS_CREATABLE:
+        policy: mute
+
   # enable the ceph dashboard for viewing cluster status
   dashboard:
     enabled: {{ ceph_ingress_enabled | lower }}
@@ -37,3 +49,25 @@ ingress:
       path: "/"
       pathType: Prefix
     ingressClassName: contour
+
+
+#######################
+# Ceph RBD
+cephBlockPools:
+  - name: ceph-blockpool
+    storageClass:
+      isDefault: true
+      reclaimPolicy: Retain
+
+
+# Ceph FS
+cephFileSystems:
+    storageClass:
+      reclaimPolicy: Retain
+
+
+# s3 alike
+cephObjectStores:
+  - name: ceph-objectstore
+    storageClass:
+      reclaimPolicy: Delete
