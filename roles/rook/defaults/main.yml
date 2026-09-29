@@ -25,3 +25,5 @@ ceph_storage_nodes: {}
 #   - name: "cy-k8w03"
 #     devices:
 #       - name: "sdd"
+
+ceph_toolbox_enabled: false
