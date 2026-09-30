@@ -1,3 +1,6 @@
 contour_helm_version: 0.4.0 
 contour_node_port_http: 30080
 contour_node_port_https: 30443
+
+# upgrade always if there is a new release
+contour_upgrade_always: false

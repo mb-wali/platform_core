@@ -10,11 +10,13 @@
     src: values-rbd.yaml.j2
     dest: /tmp/ceph-csi/values-rbd.yaml
     mode: "0644"
+  when: ceph_csi_rbd_enable | bool
 
 - name: Add Ceph CSI Helm repo
   kubernetes.core.helm_repository:
     name: ceph-csi
     repo_url: https://ceph.github.io/csi-charts
+  when: ceph_csi_rbd_enable | bool
 
 - name: Install or upgrade Ceph CSI RBD
   kubernetes.core.helm:
@@ -26,6 +28,7 @@
     values_files:
       - /tmp/ceph-csi/values-rbd.yaml
     state: present
+  when: ceph_csi_rbd_enable | bool
 
 - name: Wait for ceph-csi-rbd-nodeplugin DaemonSet to be ready
   kubernetes.core.k8s_info:
@@ -43,15 +46,17 @@
     ) == (
       ceph_csi_rbd_nodeplugin_ds.resources[0].status.desiredNumberScheduled | default(0)
     )
+  when: ceph_csi_rbd_enable | bool
 
 #############
 ### FS
 #############
-- name: Render Ceph CSI RBD values file
+- name: Render Ceph CSI FS values file
   ansible.builtin.template:
     src: values-fs.yaml.j2
     dest: /tmp/ceph-csi/values-fs.yaml
     mode: "0644"
+  when: ceph_csi_fs_enable | bool
 
 - name: Install or upgrade Ceph CSI FS
   kubernetes.core.helm:
@@ -63,6 +68,7 @@
     values_files:
       - /tmp/ceph-csi/values-fs.yaml
     state: present
+  when: ceph_csi_fs_enable | bool
 
 - name: Wait for ceph-csi-cephfs-nodeplugin DaemonSet to be ready
   kubernetes.core.k8s_info:
@@ -80,3 +86,4 @@
     ) == (
       ceph_csi_cephfs_nodeplugin_ds.resources[0].status.desiredNumberScheduled | default(0)
     )
+  when: ceph_csi_fs_enable | bool
