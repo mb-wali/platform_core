@@ -19,7 +19,16 @@ projects:
         server: https://kubernetes.default.svc
 {% endfor %}
 
-    clusterResourceWhitelist: []
+    clusterResourceWhitelist:
+{% if project.cluster_resources is defined %}
+{% for resource in project.cluster_resources %}
+      - group: {{ resource.group }}
+        kind: {{ resource.kind }}
+{% endfor %}
+{% else %}
+      []
+{% endif %}
+
 
     orphanedResources:
       warn: true
@@ -97,3 +106,36 @@ projects:
 #         - CreateNamespace=true
 
 #     revisionHistoryLimit: 3
+
+
+############################################################
+#################### Applications ##########################
+
+applications:
+{% for app in applications %}
+  {{ app.name }}:
+    project: {{ app.project }}
+
+{% if app.sources is defined %}
+    sources:
+{{ app.sources | to_nice_yaml(indent=2) | indent(6, true) }}
+{% endif %}
+
+{% if app.source is defined %}
+    source:
+{{ app.source | to_nice_yaml(indent=2) | indent(6, true) }}
+{% endif %}
+
+    destination:
+{{ app.destination | to_nice_yaml(indent=2) | indent(6, true) }}
+
+{% if app.syncPolicy is defined %}
+    syncPolicy:
+{{ app.syncPolicy | to_nice_yaml(indent=2) | indent(6, true) }}
+{% endif %}
+
+{% if app.revisionHistoryLimit is defined %}
+    revisionHistoryLimit: {{ app.revisionHistoryLimit }}
+{% endif %}
+
+{% endfor %}

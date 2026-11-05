@@ -12,10 +12,10 @@ ceph_csi_storageclass_create: true
 
 # provisioner replicas - number of replicas for RBD provisioner
 ceph_csi_rbd_provisioner_replica: 1
-
+ceph_csi_rbd_enable: true
 
 ############ CEPH FS
-ceph_csi_fs_enable: false
+ceph_csi_fs_enable: true
 ceph_csi_fs_user_id: "<ceph-user-id>"
 ceph_csi_fs_user_key: "<ceph-user-key>"
 ceph_csi_fs_provisioner_replica: 1
