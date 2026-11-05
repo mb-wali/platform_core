@@ -19,7 +19,16 @@ projects:
         server: https://kubernetes.default.svc
 {% endfor %}
 
-    clusterResourceWhitelist: []
+    clusterResourceWhitelist:
+{% if project.cluster_resources is defined %}
+{% for resource in project.cluster_resources %}
+      - group: {{ resource.group }}
+        kind: {{ resource.kind }}
+{% endfor %}
+{% else %}
+      []
+{% endif %}
+
 
     orphanedResources:
       warn: true
