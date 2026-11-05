@@ -42,4 +42,4 @@ jobs:
       - name: Run ansible-test sanity
         working-directory: ansible_collections/mb_wali/platform_core
         run: |
-          ansible-test sanity --docker
+          ansible-test sanity
