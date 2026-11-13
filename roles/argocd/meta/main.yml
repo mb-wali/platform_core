@@ -1,7 +1,7 @@
 galaxy_info:
   role_name: argocd
   author: Mojib Wali
-  description: Deploy and manage ArgoCD & ArgoCD Apps via Helm
+  description: Deploy and manage ArgoCD via Helm
   license: MIT
   min_ansible_version: "2.16"
 

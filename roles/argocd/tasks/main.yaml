@@ -108,35 +108,3 @@
     ) == (
       argocd_app_controller_sts.resources[0].status.replicas | default(0)
     )
-
-###################################
-#################### ArgoCD APPS ##
-###################################
-
-- name: Ensure ArgoCD Apps values directory exists
-  ansible.builtin.file:
-    path: /tmp/argocdapps
-    state: directory
-    mode: "0755"
-
-- name: Render ArgoCD values file
-  ansible.builtin.template:
-    src: values-apps.yaml.j2
-    dest: /tmp/argocdapps/values-apps.yaml
-    mode: "0644"
-
-- name: Install or upgrade ArgoCD Apps
-  kubernetes.core.helm:
-    name: argocdapps
-    chart_ref: argo/argocd-apps
-    chart_version: "{{ argocd_apps_version }}"
-    release_namespace: argocd
-    create_namespace: true
-    values_files:
-      - /tmp/argocdapps/values-apps.yaml
-    state: present
-
-##################################
-##################################
-- name: Include apps tasks
-  import_tasks: apps.yaml
