@@ -20,8 +20,8 @@
   kubernetes.core.helm:
     name: contour
     chart_ref: contour/contour
-    chart_version: "{{ contour_helm_version }}"
-    release_namespace: contour
+    chart_version: "{{ contour_helm_version if not (contour_upgrade_always | default(false) | bool) else omit }}"
+    release_namespace: "contour"
     create_namespace: true
     values_files:
       - /tmp/contour/values.yaml

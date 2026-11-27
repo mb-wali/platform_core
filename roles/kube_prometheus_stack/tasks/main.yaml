@@ -20,7 +20,7 @@
   kubernetes.core.helm:
     name: kube-prometheus-stack
     chart_ref: prometheus-community/kube-prometheus-stack
-    chart_version: "{{ grafana_helm_version }}"
+    chart_version: "{{ grafana_helm_version if not (grafana_upgrade_always | default(false) | bool) else omit }}"
     release_namespace: "{{ grafana_namespace }}"
     create_namespace: true
     values_files:

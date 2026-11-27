@@ -66,23 +66,28 @@ persistence:
   resourcePolicy: "keep"
   persistentVolumeClaim:
     registry:
+      existingClaim: {{ harbor_registry_existingClaim }}
       storageClass: ""
       accessMode: ReadWriteOnce
       size: {{ harbor_registry_size }}
     jobservice:
       jobLog:
+        existingClaim: {{ harbor_jobservice_existingClaim }}
         storageClass: ""
         accessMode: ReadWriteOnce
         size: 1Gi
     database:
+      existingClaim: {{ harbor_database_existingClaim }}
       storageClass: ""
       accessMode: ReadWriteOnce
       size: 1Gi
     redis:
+      existingClaim: {{ harbor_redis_existingClaim }}
       storageClass: ""
       accessMode: ReadWriteOnce
       size: 1Gi
     trivy: # vulnerability scanner
+      existingClaim: {{ harbor_trivy_existingClaim }}
       storageClass: ""
       accessMode: ReadWriteOnce
       size: {{ harbor_trivy_size }}
